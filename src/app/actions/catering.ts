@@ -87,20 +87,34 @@ export async function createEventPost(formData: FormData) {
     .select()
     .single();
 
-  // If columns don't exist yet in Supabase schema, retry with graceful fallbacks
-  if (error && (error.message?.toLowerCase().includes('column "member_count"') || error.message?.toLowerCase().includes('column "salary"'))) {
-    if (error.message?.toLowerCase().includes('column "member_count"')) {
+  // If columns don't exist yet in Supabase schema cache, retry without unmigrated columns
+  if (
+    error &&
+    (error.message?.toLowerCase().includes('salary') ||
+      error.message?.toLowerCase().includes('member_count') ||
+      error.message?.toLowerCase().includes('schema cache'))
+  ) {
+    if (error.message?.toLowerCase().includes('member_count')) {
       delete insertPayload.member_count;
     }
-    if (error.message?.toLowerCase().includes('column "salary"')) {
+    if (error.message?.toLowerCase().includes('salary')) {
       delete insertPayload.salary;
       delete insertPayload.salary_unit;
     }
     const retry = await supabase.from('events').insert(insertPayload).select().single();
     if (retry.error) {
-      return { success: false, error: retry.error.message };
+      // If still error, strip both optional columns and insert base event
+      delete insertPayload.salary;
+      delete insertPayload.salary_unit;
+      delete insertPayload.member_count;
+      const retryBase = await supabase.from('events').insert(insertPayload).select().single();
+      if (retryBase.error) {
+        return { success: false, error: retryBase.error.message };
+      }
+      event = retryBase.data;
+    } else {
+      event = retry.data;
     }
-    event = retry.data;
   } else if (error) {
     return { success: false, error: error.message };
   }
