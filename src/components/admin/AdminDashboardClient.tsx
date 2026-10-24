@@ -94,7 +94,7 @@ export default function AdminDashboardClient({
 
   // Active assignments and pending requests
   const pendingRequests = initialAssignments.filter((a) => a.status === 'pending');
-  const confirmedAssignments = initialAssignments.filter((a) => a.status === 'confirmed' || !a.status);
+  const confirmedAssignments = initialAssignments.filter((a) => a.status === 'confirmed');
   const assignedWorkerIds = new Set(confirmedAssignments.map((a) => a.worker_id));
   const availableWorkersCount = initialWorkers.filter((w) => !assignedWorkerIds.has(w.id)).length;
   const totalAssignmentsCount = confirmedAssignments.length;
@@ -513,7 +513,9 @@ export default function AdminDashboardClient({
                       .slice(0, 4)
                       .map((ev) => {
                         const daysInfo = getDaysLeft(ev.event_date);
-                        const assignedWorkers = initialAssignments.filter((a) => a.event_id === ev.id);
+                        const confirmedWorkers = initialAssignments.filter(
+                          (a) => a.event_id === ev.id && a.status === 'confirmed'
+                        );
 
                         return (
                           <div
@@ -546,7 +548,7 @@ export default function AdminDashboardClient({
                                 onClick={() => setSelectedEventForAssignment(ev)}
                                 className="text-xs font-semibold text-[#B87333] hover:text-[#9E5F27] bg-[#FFFFFF] hover:bg-[#F9EFE6] px-3 py-1.5 rounded-lg border border-[#E8E0D7] hover:border-[#E5C3A5] transition-all"
                               >
-                                Staff ({assignedWorkers.length})
+                                Staff ({confirmedWorkers.length}/{ev.member_count || 5})
                               </button>
                             </div>
                           </div>
@@ -673,6 +675,10 @@ export default function AdminDashboardClient({
                 {filteredEvents.map((event) => {
                   const daysInfo = getDaysLeft(event.event_date);
                   const assignedWorkers = initialAssignments.filter((a) => a.event_id === event.id);
+                  const confirmedWorkers = assignedWorkers.filter((a) => a.status === 'confirmed');
+                  const pendingWorkers = assignedWorkers.filter((a) => a.status === 'pending');
+                  const maxMembers = event.member_count || 5;
+                  const spotsLeft = Math.max(0, maxMembers - confirmedWorkers.length);
 
                   return (
                     <div
@@ -771,54 +777,38 @@ export default function AdminDashboardClient({
                             </span>
                             <span
                               className={
-                                assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length >=
-                                (event.member_count || 5)
+                                confirmedWorkers.length >= maxMembers
                                   ? 'text-[#36785D] font-bold'
                                   : 'text-[#B87333]'
                               }
                             >
-                              {assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length} /{' '}
-                              {event.member_count || 5} Confirmed
-                              {Math.max(
-                                0,
-                                (event.member_count || 5) -
-                                  assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length
-                              ) > 0
-                                ? ` (${
-                                    (event.member_count || 5) -
-                                    assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length
-                                  } spots open)`
+                              {confirmedWorkers.length} / {maxMembers} Confirmed
+                              {spotsLeft > 0
+                                ? ` (${spotsLeft} spots open)`
                                 : ' • Fully Staffed'}
                             </span>
                           </div>
                           <div className="w-full bg-[#E8E0D7] h-2 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-300 ${
-                                assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length >=
-                                (event.member_count || 5)
+                                confirmedWorkers.length >= maxMembers
                                   ? 'bg-[#36785D]'
                                   : 'bg-[#B87333]'
                               }`}
                               style={{
                                 width: `${Math.min(
                                   100,
-                                  Math.round(
-                                    (assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length /
-                                      (event.member_count || 5)) *
-                                      100
-                                  )
+                                  Math.round((confirmedWorkers.length / maxMembers) * 100)
                                 )}%`,
                               }}
                             />
                           </div>
 
-                          {assignedWorkers.filter((a) => a.status === 'pending').length > 0 && (
+                          {pendingWorkers.length > 0 && (
                             <div className="text-[11px] text-[#B87333] font-medium pt-1 flex items-center justify-between">
                               <span>
-                                ⏳ {assignedWorkers.filter((a) => a.status === 'pending').length} worker{' '}
-                                {assignedWorkers.filter((a) => a.status === 'pending').length === 1
-                                  ? 'request'
-                                  : 'requests'}{' '}
+                                ⏳ {pendingWorkers.length} worker{' '}
+                                {pendingWorkers.length === 1 ? 'request' : 'requests'}{' '}
                                 awaiting approval
                               </span>
                               <button
@@ -834,7 +824,7 @@ export default function AdminDashboardClient({
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-[#29251F] flex items-center gap-1.5">
                             <UserCheck className="w-3.5 h-3.5 text-[#36785D]" />
-                            Confirmed Staff ({assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length})
+                            Confirmed Staff ({confirmedWorkers.length})
                           </span>
                           <button
                             onClick={() => setSelectedEventForAssignment(event)}
@@ -844,27 +834,25 @@ export default function AdminDashboardClient({
                           </button>
                         </div>
 
-                        {assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length === 0 ? (
+                        {confirmedWorkers.length === 0 ? (
                           <p className="text-xs text-[#716A62]/70 italic">No crew confirmed yet. Workers can apply or admin can assign.</p>
                         ) : (
                           <div className="flex flex-wrap gap-1.5">
-                            {assignedWorkers
-                              .filter((aw) => aw.status === 'confirmed' || !aw.status)
-                              .map((aw) => (
-                                <span
-                                  key={aw.id}
-                                  className="inline-flex items-center gap-1.5 bg-[#F9EFE6] text-[#B87333] text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#E5C3A5]"
+                            {confirmedWorkers.map((aw) => (
+                              <span
+                                key={aw.id}
+                                className="inline-flex items-center gap-1.5 bg-[#F9EFE6] text-[#B87333] text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#E5C3A5]"
+                              >
+                                <span>{aw.worker?.full_name || 'Staff Member'}</span>
+                                <button
+                                  onClick={() => handleRemoveWorker(event.id, aw.worker_id)}
+                                  className="text-[#B87333] hover:text-[#B94A48]"
+                                  title="Unassign"
                                 >
-                                  <span>{aw.worker?.full_name || 'Staff Member'}</span>
-                                  <button
-                                    onClick={() => handleRemoveWorker(event.id, aw.worker_id)}
-                                    className="text-[#B87333] hover:text-[#B94A48]"
-                                    title="Unassign"
-                                  >
-                                    ×
-                                  </button>
-                                </span>
-                              ))}
+                                  ×
+                                </button>
+                              </span>
+                            ))}
                           </div>
                         )}
                       </div>

@@ -61,11 +61,11 @@ export default function WorkerDashboardClient({
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  // Confirmed upcoming events for this worker (status === 'confirmed' or fallback)
+  // Confirmed upcoming events for this worker (strictly status === 'confirmed')
   const myConfirmedEvents = initialEvents.filter(
     (e) =>
       myAssignments.some(
-        (a) => a.event_id === e.id && (a.status === 'confirmed' || !a.status)
+        (a) => a.event_id === e.id && a.status === 'confirmed'
       ) && e.status !== 'past'
   );
 
@@ -250,12 +250,12 @@ export default function WorkerDashboardClient({
               {openShifts.map((event) => {
                 const daysInfo = getDaysLeft(event.event_date);
                 const myAssignment = myAssignments.find((a) => a.event_id === event.id);
-                const isConfirmed = myAssignment?.status === 'confirmed' || (myAssignment && !myAssignment.status);
                 const isPending = myAssignment?.status === 'pending';
+                const isConfirmed = myAssignment?.status === 'confirmed';
 
-                // Total confirmed crew across all workers
+                // Total confirmed crew across all workers (only status === 'confirmed')
                 const confirmedCrewCount = (allAssignments || myAssignments).filter(
-                  (a) => a.event_id === event.id && (a.status === 'confirmed' || !a.status)
+                  (a) => a.event_id === event.id && a.status === 'confirmed'
                 ).length;
 
                 const maxMembers = event.member_count || 5;

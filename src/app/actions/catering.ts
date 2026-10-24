@@ -228,28 +228,24 @@ export async function toggleShiftClaim(eventId: string) {
       return { success: false, error: `This shift is already fully staffed (${maxMembers}/${maxMembers} spots filled).` };
     }
 
-    // Submit request with status 'pending'
-    let insertStatus: string = 'pending';
-    let { error } = await supabase
+    // Submit request strictly with status 'pending' (Awaiting Admin Approval)
+    const { error } = await supabase
       .from('event_assignments')
       .insert({
         event_id: eventId,
         worker_id: user.id,
-        status: insertStatus,
+        status: 'pending',
       });
 
-    // If check constraint fails on unmigrated database, fallback to confirmed
-    if (error && error.message?.toLowerCase().includes('status')) {
-      insertStatus = 'confirmed';
-      const retry = await supabase.from('event_assignments').insert({
-        event_id: eventId,
-        worker_id: user.id,
-        status: insertStatus,
-      });
-      error = retry.error;
+    if (error) {
+      if (error.message?.toLowerCase().includes('status') || error.message?.toLowerCase().includes('check')) {
+        return {
+          success: false,
+          error: 'Please execute the 2-line SQL migration in Supabase SQL editor to enable the "pending" request status: ALTER TABLE public.event_assignments DROP CONSTRAINT IF EXISTS event_assignments_status_check; ALTER TABLE public.event_assignments ADD CONSTRAINT event_assignments_status_check CHECK (status IN (\'pending\', \'confirmed\', \'completed\', \'cancelled\', \'rejected\'));',
+        };
+      }
+      return { success: false, error: error.message };
     }
-
-    if (error) return { success: false, error: error.message };
 
     // Fetch worker name for notification
     const { data: workerProfile } = await supabase
@@ -267,7 +263,7 @@ export async function toggleShiftClaim(eventId: string) {
 
     revalidatePath('/worker/dashboard');
     revalidatePath('/admin/dashboard');
-    return { success: true, claimed: true, status: insertStatus };
+    return { success: true, claimed: true, status: 'pending' };
   }
 }
 
