@@ -44,19 +44,24 @@ CREATE TABLE IF NOT EXISTS public.events (
 -- Upgrade existing events table if already created
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS salary NUMERIC;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS salary_unit TEXT DEFAULT 'day';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS member_count INTEGER NOT NULL DEFAULT 5;
 
 CREATE INDEX IF NOT EXISTS idx_events_date ON public.events(event_date);
 CREATE INDEX IF NOT EXISTS idx_events_status ON public.events(status);
 
--- 3. Create Event Assignments (Links Workers to Confirmed Events)
+-- 3. Create Event Assignments (Links Workers to Requested & Confirmed Events)
 CREATE TABLE IF NOT EXISTS public.event_assignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
   worker_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'completed', 'cancelled')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled', 'rejected')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
   UNIQUE(event_id, worker_id)
 );
+
+-- Upgrade existing constraint if table already created
+ALTER TABLE public.event_assignments DROP CONSTRAINT IF EXISTS event_assignments_status_check;
+ALTER TABLE public.event_assignments ADD CONSTRAINT event_assignments_status_check CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled', 'rejected'));
 
 CREATE INDEX IF NOT EXISTS idx_assignments_worker ON public.event_assignments(worker_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_event ON public.event_assignments(event_id);
@@ -104,14 +109,21 @@ CREATE POLICY "Admins can manage events"
   WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Users can view their own assignments" ON public.event_assignments;
-CREATE POLICY "Users can view their own assignments"
+DROP POLICY IF EXISTS "All authenticated users can view assignments" ON public.event_assignments;
+CREATE POLICY "All authenticated users can view assignments"
   ON public.event_assignments FOR SELECT TO authenticated
-  USING (worker_id = auth.uid() OR public.is_admin());
+  USING (true);
 
 DROP POLICY IF EXISTS "Workers can claim shifts" ON public.event_assignments;
 CREATE POLICY "Workers can claim shifts"
   ON public.event_assignments FOR INSERT TO authenticated
   WITH CHECK (worker_id = auth.uid());
+
+DROP POLICY IF EXISTS "Admins can update assignments" ON public.event_assignments;
+CREATE POLICY "Admins can update assignments"
+  ON public.event_assignments FOR UPDATE TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Workers can unclaim shifts" ON public.event_assignments;
 CREATE POLICY "Workers can unclaim shifts"

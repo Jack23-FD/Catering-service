@@ -24,6 +24,7 @@ export interface CateringEvent {
   hours: string;
   salary?: number | null;
   salary_unit?: string | null;
+  member_count?: number;
   venue_map_url?: string;
   collaborator?: string;
   status: EventStatus;
@@ -38,7 +39,7 @@ export interface EventAssignment {
   id: string;
   event_id: string;
   worker_id: string;
-  status: 'confirmed' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rejected';
   created_at: string;
   event?: CateringEvent;
   worker?: Profile;

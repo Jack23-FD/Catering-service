@@ -38,6 +38,9 @@ export async function createEventPost(formData: FormData) {
   const event_date = formData.get('event_date') as string;
   const place = formData.get('place') as string;
   const days = parseInt((formData.get('days') as string) || '1', 10);
+  const memberCountRaw = (formData.get('member_count') as string)?.trim();
+  const parsedMemberCount = parseInt(memberCountRaw || '5', 10);
+  const member_count = isNaN(parsedMemberCount) || parsedMemberCount < 1 ? 5 : parsedMemberCount;
   const salaryRaw = (formData.get('salary') as string)?.trim();
   const salary = salaryRaw ? parseFloat(salaryRaw) : null;
   const salary_unit = ((formData.get('salary_unit') as string) || 'day').trim().toLowerCase();
@@ -75,6 +78,7 @@ export async function createEventPost(formData: FormData) {
     created_by: user.id,
     salary: salary !== null && !isNaN(salary) ? salary : null,
     salary_unit: salary_unit || 'day',
+    member_count,
   };
 
   let { data: event, error } = await supabase
@@ -83,10 +87,15 @@ export async function createEventPost(formData: FormData) {
     .select()
     .single();
 
-  // If column doesn't exist yet in Supabase schema, retry without salary columns
-  if (error && error.message?.toLowerCase().includes('column "salary"')) {
-    delete insertPayload.salary;
-    delete insertPayload.salary_unit;
+  // If columns don't exist yet in Supabase schema, retry with graceful fallbacks
+  if (error && (error.message?.toLowerCase().includes('column "member_count"') || error.message?.toLowerCase().includes('column "salary"'))) {
+    if (error.message?.toLowerCase().includes('column "member_count"')) {
+      delete insertPayload.member_count;
+    }
+    if (error.message?.toLowerCase().includes('column "salary"')) {
+      delete insertPayload.salary;
+      delete insertPayload.salary_unit;
+    }
     const retry = await supabase.from('events').insert(insertPayload).select().single();
     if (retry.error) {
       return { success: false, error: retry.error.message };
@@ -99,7 +108,7 @@ export async function createEventPost(formData: FormData) {
   // Create broadcast notification for all workers
   await supabase.from('notifications').insert({
     title: `New Event: ${name}`,
-    message: `A new catering event at ${place} on ${event_date} has been posted. Claim your shift now!`,
+    message: `A new catering event at ${place} on ${event_date} (${member_count} positions) has been posted. Request your shift now!`,
     is_read: false,
   });
 
@@ -124,7 +133,7 @@ export async function deleteEventPost(eventId: string) {
   return { success: true };
 }
 
-// 3. Assign Worker to Event (Admin Only)
+// 3. Directly Assign Worker to Event (Admin Only)
 export async function assignWorkerToEvent(eventId: string, workerId: string) {
   const { supabase } = await requireAdmin();
 
@@ -177,42 +186,168 @@ export async function removeWorkerFromEvent(eventId: string, workerId: string) {
   return { success: true };
 }
 
-// 5. Worker Claims or Unclaims a Shift (Worker Only)
+// 5. Worker Requests or Cancels a Shift
 export async function toggleShiftClaim(eventId: string) {
   const { supabase, user } = await requireUser();
 
-  // Check if currently assigned
+  // Check if existing record
   const { data: existing } = await supabase
     .from('event_assignments')
-    .select('id')
+    .select('id, status')
     .eq('event_id', eventId)
     .eq('worker_id', user.id)
     .maybeSingle();
 
   if (existing) {
-    // Unclaim
+    // Cancel existing request or assignment
     const { error } = await supabase
       .from('event_assignments')
       .delete()
       .eq('id', existing.id);
 
     if (error) return { success: false, error: error.message };
+    revalidatePath('/worker/dashboard');
+    revalidatePath('/admin/dashboard');
+    return { success: true, claimed: false, status: 'none' };
   } else {
-    // Claim shift
-    const { error } = await supabase
+    // Check if event is fully staffed
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('name, member_count')
+      .eq('id', eventId)
+      .single();
+
+    const maxMembers = eventData?.member_count || 5;
+    const { count: confirmedCount } = await supabase
+      .from('event_assignments')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if ((confirmedCount || 0) >= maxMembers) {
+      return { success: false, error: `This shift is already fully staffed (${maxMembers}/${maxMembers} spots filled).` };
+    }
+
+    // Submit request with status 'pending'
+    let insertStatus: string = 'pending';
+    let { error } = await supabase
       .from('event_assignments')
       .insert({
         event_id: eventId,
         worker_id: user.id,
-        status: 'confirmed',
+        status: insertStatus,
       });
 
+    // If check constraint fails on unmigrated database, fallback to confirmed
+    if (error && error.message?.toLowerCase().includes('status')) {
+      insertStatus = 'confirmed';
+      const retry = await supabase.from('event_assignments').insert({
+        event_id: eventId,
+        worker_id: user.id,
+        status: insertStatus,
+      });
+      error = retry.error;
+    }
+
     if (error) return { success: false, error: error.message };
+
+    // Fetch worker name for notification
+    const { data: workerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    // Broadcast alert to admin
+    await supabase.from('notifications').insert({
+      title: `Shift Request: ${eventData?.name || 'Event'}`,
+      message: `${workerProfile?.full_name || 'A worker'} submitted a request to join "${eventData?.name || 'Event'}". Review and accept in Job Requests.`,
+      is_read: false,
+    });
+
+    revalidatePath('/worker/dashboard');
+    revalidatePath('/admin/dashboard');
+    return { success: true, claimed: true, status: insertStatus };
+  }
+}
+
+// 6. Admin Approves a Worker's Shift Request
+export async function approveShiftRequest(assignmentId: string) {
+  const { supabase } = await requireAdmin();
+
+  // Fetch assignment & event
+  const { data: assignment, error: fetchErr } = await supabase
+    .from('event_assignments')
+    .select('*, event:events(*), worker:profiles(*)')
+    .eq('id', assignmentId)
+    .single();
+
+  if (fetchErr || !assignment) return { success: false, error: 'Assignment record not found.' };
+
+  // Check event capacity
+  const maxMembers = assignment.event?.member_count || 5;
+  const { count: confirmedCount } = await supabase
+    .from('event_assignments')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_id', assignment.event_id)
+    .eq('status', 'confirmed');
+
+  if ((confirmedCount || 0) >= maxMembers) {
+    return {
+      success: false,
+      error: `Cannot accept: Event is already fully staffed (${maxMembers}/${maxMembers} positions confirmed).`,
+    };
   }
 
-  revalidatePath('/worker/dashboard');
+  const { error } = await supabase
+    .from('event_assignments')
+    .update({ status: 'confirmed' })
+    .eq('id', assignmentId);
+
+  if (error) return { success: false, error: error.message };
+
+  // Notify the worker
+  await supabase.from('notifications').insert({
+    user_id: assignment.worker_id,
+    title: 'Shift Request Approved! 🎉',
+    message: `Your shift request for "${assignment.event?.name}" on ${assignment.event?.event_date} has been accepted! You are confirmed for this event.`,
+    is_read: false,
+  });
+
   revalidatePath('/admin/dashboard');
-  return { success: true, claimed: !existing };
+  revalidatePath('/worker/dashboard');
+  return { success: true };
+}
+
+// 7. Admin Rejects a Worker's Shift Request
+export async function rejectShiftRequest(assignmentId: string) {
+  const { supabase } = await requireAdmin();
+
+  const { data: assignment } = await supabase
+    .from('event_assignments')
+    .select('*, event:events(*)')
+    .eq('id', assignmentId)
+    .single();
+
+  const { error } = await supabase
+    .from('event_assignments')
+    .delete()
+    .eq('id', assignmentId);
+
+  if (error) return { success: false, error: error.message };
+
+  if (assignment) {
+    await supabase.from('notifications').insert({
+      user_id: assignment.worker_id,
+      title: 'Shift Request Update',
+      message: `Your request for "${assignment.event?.name}" could not be confirmed at this time.`,
+      is_read: false,
+    });
+  }
+
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/worker/dashboard');
+  return { success: true };
 }
 
 // 6. Update Worker Profile (Self or Admin)

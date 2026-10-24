@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
   // 5. Fetch all event assignments
   const { data: assignmentsData, error: assignmentsError } = await supabase
     .from('event_assignments')
-    .select('*, worker:profiles(*)')
+    .select('*, worker:profiles(*), event:events(*)')
     .order('created_at', { ascending: false });
 
   if (assignmentsError) {

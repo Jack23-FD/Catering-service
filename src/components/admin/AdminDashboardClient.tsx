@@ -42,6 +42,8 @@ import {
   deleteEventPost,
   assignWorkerToEvent,
   removeWorkerFromEvent,
+  approveShiftRequest,
+  rejectShiftRequest,
 } from '@/app/actions/catering';
 import { getDaysLeft, formatEventDate } from '@/lib/dateUtils';
 import { signOut } from '@/app/auth/actions';
@@ -90,10 +92,35 @@ export default function AdminDashboardClient({
   const pastEvents = initialEvents.filter((e) => e.status === 'past').length;
   const totalWorkers = initialWorkers.length;
 
-  // Active assigned worker IDs
-  const assignedWorkerIds = new Set(initialAssignments.map((a) => a.worker_id));
+  // Active assignments and pending requests
+  const pendingRequests = initialAssignments.filter((a) => a.status === 'pending');
+  const confirmedAssignments = initialAssignments.filter((a) => a.status === 'confirmed' || !a.status);
+  const assignedWorkerIds = new Set(confirmedAssignments.map((a) => a.worker_id));
   const availableWorkersCount = initialWorkers.filter((w) => !assignedWorkerIds.has(w.id)).length;
-  const totalAssignmentsCount = initialAssignments.length;
+  const totalAssignmentsCount = confirmedAssignments.length;
+
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+
+  // Handle Approve Shift Request
+  const handleApproveRequest = async (assignmentId: string) => {
+    setProcessingRequestId(assignmentId);
+    const res = await approveShiftRequest(assignmentId);
+    if (!res.success) {
+      alert(`Approval error: ${res.error}`);
+    }
+    setProcessingRequestId(null);
+  };
+
+  // Handle Reject Shift Request
+  const handleRejectRequest = async (assignmentId: string) => {
+    if (!confirm('Are you sure you want to decline this worker shift request?')) return;
+    setProcessingRequestId(assignmentId);
+    const res = await rejectShiftRequest(assignmentId);
+    if (!res.success) {
+      alert(`Decline error: ${res.error}`);
+    }
+    setProcessingRequestId(null);
+  };
 
   // Filtered Events
   const filteredEvents = initialEvents.filter((event) => {
@@ -274,11 +301,17 @@ export default function AdminDashboardClient({
             >
               <div className="flex items-center gap-3">
                 <Briefcase className="w-4 h-4" />
-                <span>Job Assignments</span>
+                <span>Job Requests</span>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EBF5F0] text-[#235540] font-mono">
-                {totalAssignmentsCount}
-              </span>
+              {pendingRequests.length > 0 ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#B87333] text-white font-mono font-bold animate-pulse">
+                  {pendingRequests.length} pending
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EBF5F0] text-[#235540] font-mono">
+                  {totalAssignmentsCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -727,12 +760,81 @@ export default function AdminDashboardClient({
                         )}
                       </div>
 
-                      {/* Staffing Roster Section */}
-                      <div className="mt-5 pt-4 border-t border-[#E8E0D7]">
-                        <div className="flex items-center justify-between mb-2.5">
+                      {/* Staffing Capacity Indicator & Roster Section */}
+                      <div className="mt-5 pt-4 border-t border-[#E8E0D7] space-y-3">
+                        {/* Member Count Fill Bar */}
+                        <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] space-y-1.5 text-xs">
+                          <div className="flex items-center justify-between font-semibold">
+                            <span className="flex items-center gap-1.5 text-[#29251F]">
+                              <Users className="w-3.5 h-3.5 text-[#B87333]" />
+                              <span>Crew Positions:</span>
+                            </span>
+                            <span
+                              className={
+                                assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length >=
+                                (event.member_count || 5)
+                                  ? 'text-[#36785D] font-bold'
+                                  : 'text-[#B87333]'
+                              }
+                            >
+                              {assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length} /{' '}
+                              {event.member_count || 5} Confirmed
+                              {Math.max(
+                                0,
+                                (event.member_count || 5) -
+                                  assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length
+                              ) > 0
+                                ? ` (${
+                                    (event.member_count || 5) -
+                                    assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length
+                                  } spots open)`
+                                : ' • Fully Staffed'}
+                            </span>
+                          </div>
+                          <div className="w-full bg-[#E8E0D7] h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length >=
+                                (event.member_count || 5)
+                                  ? 'bg-[#36785D]'
+                                  : 'bg-[#B87333]'
+                              }`}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.round(
+                                    (assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length /
+                                      (event.member_count || 5)) *
+                                      100
+                                  )
+                                )}%`,
+                              }}
+                            />
+                          </div>
+
+                          {assignedWorkers.filter((a) => a.status === 'pending').length > 0 && (
+                            <div className="text-[11px] text-[#B87333] font-medium pt-1 flex items-center justify-between">
+                              <span>
+                                ⏳ {assignedWorkers.filter((a) => a.status === 'pending').length} worker{' '}
+                                {assignedWorkers.filter((a) => a.status === 'pending').length === 1
+                                  ? 'request'
+                                  : 'requests'}{' '}
+                                awaiting approval
+                              </span>
+                              <button
+                                onClick={() => setActiveTab('requests')}
+                                className="underline font-semibold hover:text-[#9E5F27]"
+                              >
+                                Review
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-[#29251F] flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-[#B87333]" />
-                            Assigned Crew ({assignedWorkers.length})
+                            <UserCheck className="w-3.5 h-3.5 text-[#36785D]" />
+                            Confirmed Staff ({assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length})
                           </span>
                           <button
                             onClick={() => setSelectedEventForAssignment(event)}
@@ -742,25 +844,27 @@ export default function AdminDashboardClient({
                           </button>
                         </div>
 
-                        {assignedWorkers.length === 0 ? (
-                          <p className="text-xs text-[#716A62]/70 italic">No crew assigned yet. Click Assign Crew.</p>
+                        {assignedWorkers.filter((a) => a.status === 'confirmed' || !a.status).length === 0 ? (
+                          <p className="text-xs text-[#716A62]/70 italic">No crew confirmed yet. Workers can apply or admin can assign.</p>
                         ) : (
                           <div className="flex flex-wrap gap-1.5">
-                            {assignedWorkers.map((aw) => (
-                              <span
-                                key={aw.id}
-                                className="inline-flex items-center gap-1.5 bg-[#F9EFE6] text-[#B87333] text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#E5C3A5]"
-                              >
-                                <span>{aw.worker?.full_name || 'Staff Member'}</span>
-                                <button
-                                  onClick={() => handleRemoveWorker(event.id, aw.worker_id)}
-                                  className="text-[#B87333] hover:text-[#B94A48]"
-                                  title="Unassign"
+                            {assignedWorkers
+                              .filter((aw) => aw.status === 'confirmed' || !aw.status)
+                              .map((aw) => (
+                                <span
+                                  key={aw.id}
+                                  className="inline-flex items-center gap-1.5 bg-[#F9EFE6] text-[#B87333] text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#E5C3A5]"
                                 >
-                                  ×
-                                </button>
-                              </span>
-                            ))}
+                                  <span>{aw.worker?.full_name || 'Staff Member'}</span>
+                                  <button
+                                    onClick={() => handleRemoveWorker(event.id, aw.worker_id)}
+                                    className="text-[#B87333] hover:text-[#B94A48]"
+                                    title="Unassign"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
                           </div>
                         )}
                       </div>
@@ -822,8 +926,8 @@ export default function AdminDashboardClient({
                 />
               </div>
 
-              {/* Date, Place & Duration Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Date, Place, Duration & Required Crew Count */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <label htmlFor="event_date" className="block text-xs font-semibold text-[#29251F]">
                     Event Date <span className="text-[#B94A48]">*</span>
@@ -862,6 +966,22 @@ export default function AdminDashboardClient({
                     type="number"
                     min="1"
                     defaultValue="1"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E8E0D7] text-sm text-[#29251F] bg-white focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 outline-none font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="member_count" className="block text-xs font-semibold text-[#29251F]">
+                    Required Crew / Members <span className="text-[#B94A48]">*</span>
+                  </label>
+                  <input
+                    id="member_count"
+                    name="member_count"
+                    required
+                    type="number"
+                    min="1"
+                    defaultValue="10"
+                    placeholder="e.g. 10"
                     className="w-full px-3.5 py-2.5 rounded-lg border border-[#E8E0D7] text-sm text-[#29251F] bg-white focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 outline-none font-medium"
                   />
                 </div>
@@ -1066,16 +1186,152 @@ export default function AdminDashboardClient({
         {/* TAB 5: JOB REQUESTS & ASSIGNMENTS WORKFLOW */}
         {/* ======================================================================= */}
         {activeTab === 'requests' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="bg-[#FFFFFF] p-6 rounded-2xl border border-[#E8E0D7] shadow-xs">
-              <h3 className="font-serif text-xl text-[#29251F]">Staff Assignment Dispatcher</h3>
-              <p className="text-xs text-[#716A62] mt-1">
-                Select any catering event below to dispatch and confirm staff assignments.
-              </p>
+          <div className="space-y-8 animate-fade-in">
+            {/* 1. PENDING WORKER APPLICATIONS (Awaiting Admin Decision) */}
+            <div className="bg-[#FFFFFF] p-6 sm:p-7 rounded-2xl border border-[#E8E0D7] shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-[#E8E0D7]">
+                <div>
+                  <span className="text-[10px] font-semibold text-[#B87333] uppercase tracking-wider block">
+                    Application Queue
+                  </span>
+                  <h3 className="font-serif text-2xl text-[#29251F] mt-0.5">
+                    Worker Shift Requests
+                  </h3>
+                  <p className="text-xs text-[#716A62] mt-0.5">
+                    Workers who requested to join catering posts. Review capacity and click Accept to confirm assignment.
+                  </p>
+                </div>
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-md border self-start sm:self-auto ${
+                    pendingRequests.length > 0
+                      ? 'bg-[#F9EFE6] text-[#B87333] border-[#E5C3A5]'
+                      : 'bg-[#EBF5F0] text-[#235540] border-[#A8D5C2]'
+                  }`}
+                >
+                  {pendingRequests.length} Pending Approval
+                </span>
+              </div>
+
+              {pendingRequests.length === 0 ? (
+                <div className="py-12 text-center text-[#716A62] bg-[#FAF8F5] rounded-xl border border-dashed border-[#E8E0D7]">
+                  <CheckCircle2 className="w-10 h-10 text-[#36785D]/60 mx-auto mb-2" />
+                  <h4 className="font-serif text-base text-[#29251F]">All Shift Requests Processed</h4>
+                  <p className="text-xs text-[#716A62] mt-1">
+                    There are no pending worker requests awaiting review. New applications will appear here automatically.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingRequests.map((req) => {
+                    const reqEvent = initialEvents.find((e) => e.id === req.event_id) || req.event;
+                    const reqWorker = initialWorkers.find((w) => w.id === req.worker_id) || req.worker;
+                    const isProcessing = processingRequestId === req.id;
+
+                    const confirmedCountForEvent = initialAssignments.filter(
+                      (a) => a.event_id === req.event_id && (a.status === 'confirmed' || !a.status)
+                    ).length;
+                    const maxForEvent = reqEvent?.member_count || 5;
+                    const isAtCapacity = confirmedCountForEvent >= maxForEvent;
+
+                    return (
+                      <div
+                        key={req.id}
+                        className="p-5 rounded-xl border border-[#E8E0D7] bg-[#FAF8F5]/50 hover:bg-[#FAF8F5] transition-colors flex flex-col md:flex-row md:items-center md:justify-between gap-5"
+                      >
+                        {/* Worker Profile Info */}
+                        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                          <div className="w-11 h-11 rounded-full bg-[#282923] text-[#FAF8F5] font-serif font-bold text-sm flex items-center justify-center shrink-0">
+                            {reqWorker?.full_name ? reqWorker.full_name.charAt(0).toUpperCase() : 'W'}
+                          </div>
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-serif text-base text-[#29251F] font-medium truncate">
+                                {reqWorker?.full_name || 'Staff Member'}
+                              </h4>
+                              <span className="text-[10px] font-semibold text-[#B87333] bg-[#F9EFE6] px-2 py-0.5 rounded border border-[#E5C3A5]">
+                                Shift Request
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#716A62]">
+                              {reqWorker?.phone && (
+                                <span className="flex items-center gap-1">
+                                  <Phone className="w-3 h-3 text-[#B87333]" />
+                                  {reqWorker.phone}
+                                </span>
+                              )}
+                              {reqWorker?.email && (
+                                <span className="flex items-center gap-1">
+                                  <Mail className="w-3 h-3 text-[#B87333]" />
+                                  {reqWorker.email}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Event Details and Availability */}
+                        <div className="space-y-1 text-xs md:text-right">
+                          <p className="font-semibold text-[#29251F] text-sm">{reqEvent?.name || 'Event Post'}</p>
+                          <p className="text-[#716A62]">
+                            {reqEvent ? formatEventDate(reqEvent.event_date) : '-'} • {reqEvent?.place || '-'}
+                          </p>
+                          <p className="text-xs">
+                            Current Staffing:{' '}
+                            <strong className={isAtCapacity ? 'text-[#B94A48]' : 'text-[#36785D]'}>
+                              {confirmedCountForEvent} / {maxForEvent} Confirmed
+                            </strong>
+                          </p>
+                        </div>
+
+                        {/* Action Buttons: Accept / Decline */}
+                        <div className="flex items-center gap-2.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#E8E0D7]">
+                          <button
+                            onClick={() => handleRejectRequest(req.id)}
+                            disabled={isProcessing}
+                            className="px-3.5 py-2 rounded-lg text-xs font-semibold text-[#716A62] hover:text-[#B94A48] bg-[#FFFFFF] hover:bg-red-50 border border-[#E8E0D7] hover:border-[#B94A48]/30 transition-all"
+                          >
+                            Decline
+                          </button>
+
+                          <button
+                            onClick={() => handleApproveRequest(req.id)}
+                            disabled={isProcessing || isAtCapacity}
+                            className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+                          >
+                            {isProcessing ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>{isAtCapacity ? 'Shift Full' : 'Accept & Assign'}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 2. DIRECT DISPATCHER (Manual Assignment) */}
+            <div className="bg-[#FFFFFF] p-6 rounded-2xl border border-[#E8E0D7] shadow-xs space-y-4">
+              <div className="pb-3 border-b border-[#E8E0D7]">
+                <h3 className="font-serif text-xl text-[#29251F]">Direct Staffing Dispatcher</h3>
+                <p className="text-xs text-[#716A62] mt-0.5">
+                  Select any catering event below to dispatch and confirm staff directly without waiting for a request.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {initialEvents.filter((e) => e.status !== 'past').map((ev) => {
-                  const assigned = initialAssignments.filter((a) => a.event_id === ev.id);
+                  const assigned = initialAssignments.filter(
+                    (a) => a.event_id === ev.id && (a.status === 'confirmed' || !a.status)
+                  );
+                  const max = ev.member_count || 5;
+
                   return (
                     <div
                       key={ev.id}
@@ -1087,7 +1343,7 @@ export default function AdminDashboardClient({
                           {formatEventDate(ev.event_date)} • {ev.place}
                         </p>
                         <p className="text-xs font-semibold text-[#36785D] mt-1">
-                          {assigned.length} Crew Members Confirmed
+                          👥 {assigned.length} / {max} Crew Confirmed
                         </p>
                       </div>
 

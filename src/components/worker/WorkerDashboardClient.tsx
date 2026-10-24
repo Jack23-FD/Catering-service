@@ -24,6 +24,7 @@ import {
   X,
   Briefcase,
   Sparkles,
+  Users,
 } from 'lucide-react';
 import { CateringEvent, Profile, EventAssignment, AppNotification } from '@/types/database';
 import { toggleShiftClaim, updateWorkerProfile, markNotificationAsRead } from '@/app/actions/catering';
@@ -34,6 +35,7 @@ interface WorkerDashboardClientProps {
   userEmail: string;
   initialEvents: CateringEvent[];
   myAssignments: EventAssignment[];
+  allAssignments?: EventAssignment[];
   initialNotifications: AppNotification[];
 }
 
@@ -42,6 +44,7 @@ export default function WorkerDashboardClient({
   userEmail,
   initialEvents,
   myAssignments,
+  allAssignments,
   initialNotifications,
 }: WorkerDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<'shifts' | 'upcoming' | 'profile' | 'notifications'>('shifts');
@@ -58,12 +61,20 @@ export default function WorkerDashboardClient({
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  // Set of event IDs assigned to this worker
-  const myAssignedEventIds = new Set(myAssignments.map((a) => a.event_id));
-
-  // Confirmed upcoming events for this worker
+  // Confirmed upcoming events for this worker (status === 'confirmed' or fallback)
   const myConfirmedEvents = initialEvents.filter(
-    (e) => myAssignedEventIds.has(e.id) && e.status !== 'past'
+    (e) =>
+      myAssignments.some(
+        (a) => a.event_id === e.id && (a.status === 'confirmed' || !a.status)
+      ) && e.status !== 'past'
+  );
+
+  // Pending requests for this worker
+  const myPendingEvents = initialEvents.filter(
+    (e) =>
+      myAssignments.some(
+        (a) => a.event_id === e.id && a.status === 'pending'
+      ) && e.status !== 'past'
   );
 
   // Available open shifts
@@ -238,14 +249,29 @@ export default function WorkerDashboardClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {openShifts.map((event) => {
                 const daysInfo = getDaysLeft(event.event_date);
-                const isClaimed = myAssignedEventIds.has(event.id);
+                const myAssignment = myAssignments.find((a) => a.event_id === event.id);
+                const isConfirmed = myAssignment?.status === 'confirmed' || (myAssignment && !myAssignment.status);
+                const isPending = myAssignment?.status === 'pending';
+
+                // Total confirmed crew across all workers
+                const confirmedCrewCount = (allAssignments || myAssignments).filter(
+                  (a) => a.event_id === event.id && (a.status === 'confirmed' || !a.status)
+                ).length;
+
+                const maxMembers = event.member_count || 5;
+                const isFull = confirmedCrewCount >= maxMembers && !isConfirmed && !isPending;
+                const spotsLeft = Math.max(0, maxMembers - confirmedCrewCount);
                 const isProcessing = claimingEventId === event.id;
 
                 return (
                   <div
                     key={event.id}
                     className={`bg-[#FFFFFF] rounded-2xl p-6 border transition-all flex flex-col justify-between shadow-xs ${
-                      isClaimed ? 'border-[#A8D5C2] ring-1 ring-[#A8D5C2]' : 'border-[#E8E0D7] hover:border-[#B87333]/40'
+                      isConfirmed
+                        ? 'border-[#A8D5C2] ring-1 ring-[#A8D5C2]'
+                        : isPending
+                        ? 'border-[#E5C3A5] ring-1 ring-[#E5C3A5]'
+                        : 'border-[#E8E0D7] hover:border-[#B87333]/40'
                     }`}
                   >
                     <div className="space-y-4">
@@ -255,10 +281,24 @@ export default function WorkerDashboardClient({
                           {daysInfo.text}
                         </span>
 
-                        {isClaimed && (
+                        {isConfirmed ? (
                           <span className="text-[11px] font-semibold text-[#235540] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2] flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5 text-[#36785D]" />
-                            Shift Confirmed
+                            Shift Confirmed ✓
+                          </span>
+                        ) : isPending ? (
+                          <span className="text-[11px] font-semibold text-[#B87333] bg-[#F9EFE6] px-2.5 py-0.5 rounded-md border border-[#E5C3A5] flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-[#B87333]" />
+                            Request Pending Approval
+                          </span>
+                        ) : isFull ? (
+                          <span className="text-[11px] font-semibold text-[#B94A48] bg-red-50 px-2.5 py-0.5 rounded-md border border-[#B94A48]/30 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5 text-[#B94A48]" />
+                            Fully Staffed
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-[#36785D] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2]">
+                            {spotsLeft} {spotsLeft === 1 ? 'Spot' : 'Spots'} Left
                           </span>
                         )}
                       </div>
@@ -298,6 +338,29 @@ export default function WorkerDashboardClient({
                         </div>
                       </div>
 
+                      {/* Live Crew Availability Bar (e.g. 5/10) */}
+                      <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span className="flex items-center gap-1.5 text-[#29251F]">
+                            <Users className="w-3.5 h-3.5 text-[#B87333]" />
+                            <span>Crew Positions:</span>
+                          </span>
+                          <span className={confirmedCrewCount >= maxMembers ? 'text-[#36785D] font-bold' : 'text-[#B87333]'}>
+                            {confirmedCrewCount} / {maxMembers} Confirmed {spotsLeft > 0 ? `(${spotsLeft} open)` : '• Full'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-[#E8E0D7] h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              confirmedCrewCount >= maxMembers ? 'bg-[#36785D]' : 'bg-[#B87333]'
+                            }`}
+                            style={{
+                              width: `${Math.min(100, Math.round((confirmedCrewCount / maxMembers) * 100))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
                       {/* Google Maps Venue Link */}
                       {event.venue_map_url ? (
                         <a
@@ -314,30 +377,55 @@ export default function WorkerDashboardClient({
                       )}
                     </div>
 
-                    {/* Claim Shift Button */}
+                    {/* Request / Claim Shift Button */}
                     <div className="mt-5 pt-4 border-t border-[#E8E0D7]">
-                      <button
-                        onClick={() => handleToggleClaim(event.id)}
-                        disabled={isProcessing}
-                        className={`w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
-                          isClaimed
-                            ? 'bg-[#EBF5F0] text-[#235540] hover:bg-red-50 hover:text-[#B94A48] border border-[#A8D5C2] hover:border-[#B94A48]/30'
-                            : 'bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs'
-                        }`}
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : isClaimed ? (
-                          <>
-                            <span>Shift Claimed ✓ (Click to Release)</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Claim This Shift</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
+                      {isConfirmed ? (
+                        <button
+                          onClick={() => handleToggleClaim(event.id)}
+                          disabled={isProcessing}
+                          className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 bg-[#EBF5F0] text-[#235540] hover:bg-red-50 hover:text-[#B94A48] border border-[#A8D5C2] hover:border-[#B94A48]/30"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <span>✓ Confirmed Crew Member (Click to Release)</span>
+                          )}
+                        </button>
+                      ) : isPending ? (
+                        <button
+                          onClick={() => handleToggleClaim(event.id)}
+                          disabled={isProcessing}
+                          className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 bg-[#F9EFE6] text-[#B87333] hover:bg-red-50 hover:text-[#B94A48] border border-[#E5C3A5] hover:border-[#B94A48]/30"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <span>⏳ Request Pending Admin Approval (Click to Cancel)</span>
+                          )}
+                        </button>
+                      ) : isFull ? (
+                        <button
+                          disabled
+                          className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 bg-[#FAF8F5] text-[#716A62] border border-[#E8E0D7] cursor-not-allowed opacity-75"
+                        >
+                          <span>Shift Fully Staffed ({confirmedCrewCount}/{maxMembers})</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleClaim(event.id)}
+                          disabled={isProcessing}
+                          className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <span>Request This Shift ({spotsLeft} spots open)</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -450,6 +538,53 @@ export default function WorkerDashboardClient({
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Pending Shift Requests (Awaiting Admin Confirmation) */}
+          {myPendingEvents.length > 0 && (
+            <div className="space-y-4 pt-6 border-t border-[#E8E0D7]">
+              <div>
+                <h3 className="font-serif text-xl text-[#29251F] flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-[#B87333]" />
+                  <span>Pending Shift Requests ({myPendingEvents.length})</span>
+                </h3>
+                <p className="text-xs text-[#716A62]">
+                  Requests submitted and awaiting administrator approval.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {myPendingEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="bg-[#FFFFFF] rounded-2xl p-5 border border-[#E5C3A5] bg-[#FAF8F5]/50 shadow-xs flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-[#B87333] bg-[#F9EFE6] px-2.5 py-0.5 rounded-md border border-[#E5C3A5]">
+                          ⏳ Awaiting Admin Approval
+                        </span>
+                        <span className="text-xs text-[#716A62]">
+                          {formatEventDate(event.event_date)}
+                        </span>
+                      </div>
+                      <h4 className="font-serif text-lg text-[#29251F]">{event.name}</h4>
+                      <p className="text-xs text-[#716A62]">{event.place}</p>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#E8E0D7] flex items-center justify-between">
+                      <span className="text-xs text-[#716A62]">Status: In Review</span>
+                      <button
+                        onClick={() => handleToggleClaim(event.id)}
+                        className="text-xs text-[#B94A48] hover:underline font-semibold"
+                      >
+                        Cancel Request
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

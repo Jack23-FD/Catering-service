@@ -43,7 +43,7 @@ export default async function WorkerDashboardPage() {
     console.warn('Events fetch note:', eventsError.message);
   }
 
-  // 3. Fetch this worker's confirmed assignments
+  // 3. Fetch this worker's requests & confirmed assignments
   const { data: assignmentsData, error: assignmentsError } = await supabase
     .from('event_assignments')
     .select('*, event:events(*)')
@@ -53,7 +53,16 @@ export default async function WorkerDashboardPage() {
     console.warn('Worker assignments fetch note:', assignmentsError.message);
   }
 
-  // 4. Fetch notifications for this worker
+  // 4. Fetch all event assignments to calculate live spot availability (e.g. 5/10)
+  const { data: allAssignmentsData, error: allAssignmentsError } = await supabase
+    .from('event_assignments')
+    .select('*');
+
+  if (allAssignmentsError) {
+    console.warn('All assignments fetch note:', allAssignmentsError.message);
+  }
+
+  // 5. Fetch notifications for this worker
   const { data: notificationsData, error: notificationsError } = await supabase
     .from('notifications')
     .select('*')
@@ -67,9 +76,11 @@ export default async function WorkerDashboardPage() {
   const events: CateringEvent[] = (eventsData || []).map((e) => ({
     ...e,
     days: e.days || 1,
+    member_count: e.member_count || 5,
   }));
 
   const myAssignments: EventAssignment[] = assignmentsData || [];
+  const allAssignments: EventAssignment[] = allAssignmentsData || [];
   const notifications: AppNotification[] = notificationsData || [];
 
   return (
@@ -86,6 +97,7 @@ export default async function WorkerDashboardPage() {
           userEmail={user.email || ''}
           initialEvents={events}
           myAssignments={myAssignments}
+          allAssignments={allAssignments}
           initialNotifications={notifications}
         />
       </main>
