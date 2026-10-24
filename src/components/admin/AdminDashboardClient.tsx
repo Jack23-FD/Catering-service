@@ -404,7 +404,7 @@ export default function AdminDashboardClient({
           <form onSubmit={handleCreateEvent} className="space-y-5">
             {/* 1. Event Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-800 mb-1">
                 Event Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -413,14 +413,14 @@ export default function AdminDashboardClient({
                 required
                 type="text"
                 placeholder="e.g. Royal Wedding Banquet / Tech Conference Gala"
-                className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
               />
             </div>
 
             {/* 2. Date, Place & Number of Days */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="event_date" className="block text-sm font-semibold text-gray-700 mb-1">
+                <label htmlFor="event_date" className="block text-sm font-semibold text-gray-800 mb-1">
                   Event Date <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -428,12 +428,12 @@ export default function AdminDashboardClient({
                   name="event_date"
                   required
                   type="date"
-                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
                 />
               </div>
 
               <div>
-                <label htmlFor="place" className="block text-sm font-semibold text-gray-700 mb-1">
+                <label htmlFor="place" className="block text-sm font-semibold text-gray-800 mb-1">
                   Place / City <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -442,12 +442,12 @@ export default function AdminDashboardClient({
                   required
                   type="text"
                   placeholder="e.g. Grand Palace Hall, Chennai"
-                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
                 />
               </div>
 
               <div>
-                <label htmlFor="days" className="block text-sm font-semibold text-gray-700 mb-1">
+                <label htmlFor="days" className="block text-sm font-semibold text-gray-800 mb-1">
                   Number of Days <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -457,14 +457,14 @@ export default function AdminDashboardClient({
                   type="number"
                   min="1"
                   defaultValue="1"
-                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
                 />
               </div>
             </div>
 
             {/* 3. Venue Google Maps Location */}
             <div>
-              <label htmlFor="venue_map_url" className="block text-sm font-semibold text-gray-700 mb-1">
+              <label htmlFor="venue_map_url" className="block text-sm font-semibold text-gray-800 mb-1">
                 Venue – Google Maps Location URL
               </label>
               <div className="relative rounded-xl">
@@ -476,7 +476,7 @@ export default function AdminDashboardClient({
                   name="venue_map_url"
                   type="url"
                   placeholder="https://maps.google.com/?q=..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
                 />
               </div>
               <p className="text-[11px] text-gray-500 mt-1">
@@ -680,7 +680,7 @@ export default function AdminDashboardClient({
               placeholder="Search by worker name, email, phone, or address..."
               value={searchWorker}
               onChange={(e) => setSearchWorker(e.target.value)}
-              className="w-full max-w-md px-4 py-2 rounded-xl border border-purple-200 text-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none"
+              className="w-full max-w-md px-4 py-2 rounded-xl border border-purple-200 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none"
             />
             <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-100 ml-3 shrink-0">
               {filteredWorkers.length} Registered
