@@ -16,7 +16,6 @@ import {
   Bell,
   AlertCircle,
   Loader2,
-  Camera,
   Layers,
   ArrowRight,
   UserCheck,
@@ -496,25 +495,6 @@ export default function WorkerDashboardClient({
           {isEditingProfile ? (
             /* Edit Form */
             <form onSubmit={handleProfileSubmit} className="space-y-4">
-              {/* Profile Photo URL */}
-              <div>
-                <label htmlFor="avatar_url" className="block text-xs font-semibold text-gray-700 mb-1">
-                  Profile Photo URL
-                </label>
-                <div className="relative rounded-xl">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
-                    <Camera className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="avatar_url"
-                    name="avatar_url"
-                    type="url"
-                    defaultValue={workerProfile.avatar_url || ''}
-                    placeholder="https://images.unsplash.com/... or direct image link"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
-                  />
-                </div>
-              </div>
 
               {/* Name */}
               <div>

@@ -13,7 +13,6 @@ import {
   Loader2,
   Phone,
   Home,
-  Camera,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import PasswordInput from '@/components/PasswordInput';
@@ -24,7 +23,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -102,7 +100,6 @@ export default function RegisterPage() {
             full_name: fullName.trim(),
             phone: phone.trim(),
             address: address.trim(),
-            avatar_url: avatarUrl.trim() || null,
           },
         },
       });
@@ -129,7 +126,6 @@ export default function RegisterPage() {
             email: email.trim(),
             phone: phone.trim() || null,
             address: address.trim() || null,
-            avatar_url: avatarUrl.trim() || null,
             role: 'worker',
           }, { onConflict: 'id' });
 
@@ -262,65 +258,38 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {/* Mobile Number & Photo URL in a 2-col row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Mobile Number */}
-              <div className="space-y-1">
-                <label
-                  htmlFor="phone"
-                  className="block text-xs font-semibold text-gray-700"
-                >
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className={`block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
-                      errors.phone
-                        ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50/30'
-                        : 'border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300'
-                    }`}
-                  />
+            {/* Mobile Number */}
+            <div className="space-y-1 text-left">
+              <label
+                htmlFor="phone"
+                className="block text-xs font-semibold text-gray-700"
+              >
+                Mobile Number <span className="text-red-500">*</span>
+              </label>
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                  <Phone className="h-4 w-4" />
                 </div>
-                {errors.phone && (
-                  <p className="text-xs text-red-600 font-medium">
-                    {errors.phone}
-                  </p>
-                )}
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={`block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
+                    errors.phone
+                      ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50/30'
+                      : 'border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300'
+                  }`}
+                />
               </div>
-
-              {/* Profile Photo URL */}
-              <div className="space-y-1">
-                <label
-                  htmlFor="avatarUrl"
-                  className="block text-xs font-semibold text-gray-700"
-                >
-                  Profile Photo URL <span className="text-gray-400 font-normal">(Optional)</span>
-                </label>
-                <div className="relative rounded-xl shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
-                    <Camera className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="avatarUrl"
-                    name="avatarUrl"
-                    type="url"
-                    placeholder="https://... photo link"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300 transition-all duration-150 outline-none"
-                  />
-                </div>
-              </div>
+              {errors.phone && (
+                <p className="text-xs text-red-600 font-medium">
+                  {errors.phone}
+                </p>
+              )}
             </div>
 
             {/* Address */}
