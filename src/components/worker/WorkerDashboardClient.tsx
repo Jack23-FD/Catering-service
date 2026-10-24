@@ -19,6 +19,11 @@ import {
   Layers,
   ArrowRight,
   UserCheck,
+  Banknote,
+  Check,
+  X,
+  Briefcase,
+  Sparkles,
 } from 'lucide-react';
 import { CateringEvent, Profile, EventAssignment, AppNotification } from '@/types/database';
 import { toggleShiftClaim, updateWorkerProfile, markNotificationAsRead } from '@/app/actions/catering';
@@ -74,7 +79,7 @@ export default function WorkerDashboardClient({
     const res = await updateWorkerProfile(formData);
 
     if (res.success) {
-      setProfileMsg({ type: 'success', text: 'Profile updated successfully!' });
+      setProfileMsg({ type: 'success', text: 'Worker profile updated successfully!' });
       setIsEditingProfile(false);
     } else {
       setProfileMsg({ type: 'error', text: res.error || 'Failed to update profile.' });
@@ -87,7 +92,7 @@ export default function WorkerDashboardClient({
     setClaimingEventId(eventId);
     const res = await toggleShiftClaim(eventId);
     if (!res.success) {
-      alert(`Shift update failed: ${res.error}`);
+      alert(`Shift claim failed: ${res.error}`);
     }
     setClaimingEventId(null);
   };
@@ -101,133 +106,132 @@ export default function WorkerDashboardClient({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Hero Banner */}
-      <section className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-purple-800">
-        <div className="absolute right-0 top-0 -mt-10 -mr-10 w-72 h-72 bg-purple-600/30 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div className="space-y-6 max-w-6xl mx-auto w-full selection:bg-[#A8D5C2] selection:text-[#282923]">
+      {/* ========================================================================= */}
+      {/* 1. WELCOME HERO (Warm Hospitality Aesthetic) */}
+      {/* ========================================================================= */}
+      <section className="bg-[#FFFFFF] rounded-2xl p-6 sm:p-8 border border-[#E8E0D7] shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-white/20 p-1 shrink-0 overflow-hidden shadow-lg">
-              {workerProfile.avatar_url ? (
-                <img
-                  src={workerProfile.avatar_url}
-                  alt={workerProfile.full_name}
-                  className="w-full h-full object-cover rounded-xl"
-                />
-              ) : (
-                <div className="w-full h-full rounded-xl bg-purple-600 flex items-center justify-center text-white font-extrabold text-2xl">
-                  {workerProfile.full_name ? workerProfile.full_name.charAt(0).toUpperCase() : 'W'}
-                </div>
-              )}
+            {/* Worker Avatar Initials */}
+            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl bg-[#282923] text-[#FAF8F5] font-serif font-bold text-2xl flex items-center justify-center shrink-0 border border-[#E8E0D7] shadow-xs">
+              {workerProfile.full_name ? workerProfile.full_name.charAt(0).toUpperCase() : 'W'}
             </div>
 
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-400/30 mb-2">
-                <UserCheck className="w-4 h-4 text-purple-300" />
-                <span>Verified Catering Worker</span>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide uppercase bg-[#EBF5F0] text-[#235540] border border-[#A8D5C2]">
+                <UserCheck className="w-3.5 h-3.5 text-[#36785D]" />
+                <span>Verified Banquet Staff</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Welcome, {workerProfile.full_name}!
+              <h1 className="font-serif text-2xl sm:text-3xl text-[#29251F] tracking-tight">
+                Welcome, {workerProfile.full_name}
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-purple-200">
-                {workerProfile.phone ? `📱 ${workerProfile.phone}` : 'Add your mobile number to receive shift updates.'}
+              <p className="text-xs text-[#716A62]">
+                {workerProfile.phone ? `📱 ${workerProfile.phone}` : 'Add your contact number in your profile.'} • {userEmail}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm transition-all"
-            >
-              Edit Profile
-            </button>
+          {/* Quick Shortcuts */}
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => setActiveTab('upcoming')}
-              className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-950/40 transition-all flex items-center gap-2"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs transition-all"
             >
               <Calendar className="w-4 h-4" />
-              <span>My Confirmed Events ({myConfirmedEvents.length})</span>
+              <span>Confirmed Shifts ({myConfirmedEvents.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#716A62] hover:text-[#29251F] bg-[#FAF8F5] hover:bg-[#F9EFE6] border border-[#E8E0D7] transition-all"
+            >
+              Edit Profile
             </button>
           </div>
         </div>
       </section>
 
-      {/* Navigation Tabs Bar */}
-      <div className="bg-white rounded-2xl p-2 shadow-sm border border-purple-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      {/* ========================================================================= */}
+      {/* 2. NAVIGATION TABS */}
+      {/* ========================================================================= */}
+      <div className="bg-[#FFFFFF] rounded-xl p-1.5 border border-[#E8E0D7] shadow-xs flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('shifts')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
             activeTab === 'shifts'
-              ? 'bg-purple-950 text-white shadow-sm'
-              : 'text-gray-600 hover:text-purple-900 hover:bg-purple-50'
+              ? 'bg-[#B87333] text-white shadow-xs'
+              : 'text-[#716A62] hover:text-[#29251F] hover:bg-[#FAF8F5]'
           }`}
         >
-          <Layers className="w-4 h-4" />
-          <span>Available Event Posts ({openShifts.length})</span>
+          <Briefcase className="w-3.5 h-3.5" />
+          <span>Available Job Posts ({openShifts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('upcoming')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
             activeTab === 'upcoming'
-              ? 'bg-purple-950 text-white shadow-sm'
-              : 'text-gray-600 hover:text-purple-900 hover:bg-purple-50'
+              ? 'bg-[#B87333] text-white shadow-xs'
+              : 'text-[#716A62] hover:text-[#29251F] hover:bg-[#FAF8F5]'
           }`}
         >
-          <CalendarDays className="w-4 h-4" />
-          <span>Upcoming Event Tracking ({myConfirmedEvents.length})</span>
+          <CalendarDays className="w-3.5 h-3.5" />
+          <span>Confirmed Shifts ({myConfirmedEvents.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
             activeTab === 'profile'
-              ? 'bg-purple-950 text-white shadow-sm'
-              : 'text-gray-600 hover:text-purple-900 hover:bg-purple-50'
+              ? 'bg-[#B87333] text-white shadow-xs'
+              : 'text-[#716A62] hover:text-[#29251F] hover:bg-[#FAF8F5]'
           }`}
         >
-          <User className="w-4 h-4" />
+          <User className="w-3.5 h-3.5" />
           <span>Worker Profile</span>
         </button>
 
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
             activeTab === 'notifications'
-              ? 'bg-purple-950 text-white shadow-sm'
-              : 'text-gray-600 hover:text-purple-900 hover:bg-purple-50'
+              ? 'bg-[#B87333] text-white shadow-xs'
+              : 'text-[#716A62] hover:text-[#29251F] hover:bg-[#FAF8F5]'
           }`}
         >
-          <Bell className="w-4 h-4" />
+          <Bell className="w-3.5 h-3.5" />
           <span>Notifications</span>
           {unreadCount > 0 && (
-            <span className="bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+            <span className="bg-[#B94A48] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">
               {unreadCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* TAB 1: EVENT POST (ADMIN-ENTERED DATA) */}
+      {/* ========================================================================= */}
+      {/* TAB 1: AVAILABLE CATERING JOBS */}
+      {/* ========================================================================= */}
       {activeTab === 'shifts' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Live Catering Event Postings</h2>
-              <p className="text-xs text-gray-500">
-                Browse open events published by coordinators, view full catering details, and claim your shifts.
+              <h2 className="font-serif text-xl sm:text-2xl text-[#29251F]">Available Catering Shifts</h2>
+              <p className="text-xs text-[#716A62]">
+                Explore open shifts published by banquet coordinators, review pay rates, and claim your attendance.
               </p>
             </div>
+            <span className="text-xs font-semibold text-[#36785D] bg-[#EBF5F0] px-3 py-1 rounded-md border border-[#A8D5C2] self-start sm:self-auto">
+              {openShifts.length} Openings Active
+            </span>
           </div>
 
           {openShifts.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center border border-purple-100 shadow-sm">
-              <CalendarDays className="w-12 h-12 text-purple-300 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-gray-900">No active catering posts</h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                All upcoming events will appear here as soon as the administrator publishes them. Check back soon!
+            <div className="bg-[#FFFFFF] rounded-2xl p-12 text-center border border-[#E8E0D7] shadow-xs">
+              <CalendarDays className="w-10 h-10 text-[#716A62]/40 mx-auto mb-3" />
+              <h3 className="font-serif text-lg text-[#29251F]">No open shifts posted</h3>
+              <p className="text-xs text-[#716A62] mt-1 max-w-sm mx-auto">
+                All upcoming events will appear here as soon as event coordinators publish them. Check back soon!
               </p>
             </div>
           ) : (
@@ -240,91 +244,92 @@ export default function WorkerDashboardClient({
                 return (
                   <div
                     key={event.id}
-                    className={`bg-white rounded-3xl p-6 border transition-all flex flex-col justify-between shadow-sm hover:shadow-md ${
-                      isClaimed ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-purple-100'
+                    className={`bg-[#FFFFFF] rounded-2xl p-6 border transition-all flex flex-col justify-between shadow-xs ${
+                      isClaimed ? 'border-[#A8D5C2] ring-1 ring-[#A8D5C2]' : 'border-[#E8E0D7] hover:border-[#B87333]/40'
                     }`}
                   >
-                    <div>
+                    <div className="space-y-4">
                       {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className={`text-xs px-3 py-1 rounded-full border ${daysInfo.badgeClass}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-[11px] px-2.5 py-0.5 rounded-md border ${daysInfo.badgeClass}`}>
                           {daysInfo.text}
                         </span>
 
                         {isClaimed && (
-                          <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            Confirmed Shift
+                          <span className="text-[11px] font-semibold text-[#235540] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2] flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#36785D]" />
+                            Shift Confirmed
                           </span>
                         )}
                       </div>
 
                       {/* Event Title */}
-                      <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
+                      <div>
+                        <h3 className="font-serif text-xl text-[#29251F] leading-snug">{event.name}</h3>
+                        <p className="text-xs text-[#716A62] flex items-center gap-1.5 mt-1">
+                          <MapPin className="w-3.5 h-3.5 text-[#B87333]" />
+                          <span>{event.place}</span>
+                        </p>
+                      </div>
 
-                      {/* Event Details: Date, Place, Days */}
-                      <div className="mt-4 grid grid-cols-3 gap-2.5 text-xs text-gray-700 bg-purple-50/40 p-3.5 rounded-2xl border border-purple-100">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-semibold text-gray-900 truncate">{formatEventDate(event.event_date)}</span>
+                      {/* Specs Grid: Date, Duration, Pay Rate */}
+                      <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] text-xs">
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Event Date</span>
+                          <span className="font-semibold text-[#29251F] truncate block">
+                            {formatEventDate(event.event_date)}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-medium truncate">{event.place}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-bold text-purple-900 truncate">
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Duration</span>
+                          <span className="font-semibold text-[#29251F] truncate block">
                             {event.days} {event.days === 1 ? 'Day' : 'Days'}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Compensation</span>
+                          <span className="font-semibold text-[#36785D] truncate block">
+                            {event.salary != null && !isNaN(Number(event.salary))
+                              ? `₹${Number(event.salary).toLocaleString('en-IN')}/${event.salary_unit || 'day'}`
+                              : 'Standard'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Salary Badge */}
-                      {event.salary != null && !isNaN(Number(event.salary)) && (
-                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shadow-xs">
-                          <span className="text-emerald-600">💰 Salary:</span>
-                          <span>₹{Number(event.salary).toLocaleString('en-IN')}</span>
-                          <span className="text-[11px] font-medium text-emerald-600 lowercase">
-                            / {event.salary_unit || 'day'}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Venue Google Maps Location */}
+                      {/* Google Maps Venue Link */}
                       {event.venue_map_url ? (
                         <a
                           href={event.venue_map_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 hover:text-purple-900 hover:underline"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B87333] hover:text-[#9E5F27] hover:underline"
                         >
-                          <MapPin className="w-3.5 h-3.5 text-purple-600" />
-                          View Venue on Google Maps <ExternalLink className="w-3 h-3" />
+                          <MapPin className="w-3.5 h-3.5 text-[#B87333]" />
+                          Open Venue in Google Maps <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <p className="mt-3 text-xs text-gray-400 italic">No Google Maps link attached</p>
+                        <p className="text-xs text-[#716A62]/60 italic">Venue details provided upon confirmation</p>
                       )}
                     </div>
 
-                    {/* Claim / Unclaim Action Button */}
-                    <div className="mt-6 pt-4 border-t border-gray-100">
+                    {/* Claim Shift Button */}
+                    <div className="mt-5 pt-4 border-t border-[#E8E0D7]">
                       <button
                         onClick={() => handleToggleClaim(event.id)}
                         disabled={isProcessing}
-                        className={`w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                        className={`w-full py-2.5 px-4 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                           isClaimed
-                            ? 'bg-emerald-50 text-emerald-800 hover:bg-rose-50 hover:text-rose-700 border border-emerald-200 hover:border-rose-200'
-                            : 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-900/30'
+                            ? 'bg-[#EBF5F0] text-[#235540] hover:bg-red-50 hover:text-[#B94A48] border border-[#A8D5C2] hover:border-[#B94A48]/30'
+                            : 'bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs'
                         }`}
                       >
                         {isProcessing ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : isClaimed ? (
                           <>
-                            <span>Shift Claimed ✓ (Click to Cancel)</span>
+                            <span>Shift Claimed ✓ (Click to Release)</span>
                           </>
                         ) : (
                           <>
@@ -342,28 +347,28 @@ export default function WorkerDashboardClient({
         </div>
       )}
 
-      {/* TAB 2: UPCOMING EVENT TRACKING & DAYS LEFT */}
+      {/* ========================================================================= */}
+      {/* TAB 2: UPCOMING ASSIGNED SHIFTS (Countdown & Venue) */}
+      {/* ========================================================================= */}
       {activeTab === 'upcoming' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Your Confirmed Upcoming Shifts</h2>
-              <p className="text-xs text-gray-500">
-                Track your active assignments and countdown days left until event execution.
-              </p>
-            </div>
+        <div className="space-y-6 animate-fade-in">
+          <div>
+            <h2 className="font-serif text-xl sm:text-2xl text-[#29251F]">Your Confirmed Upcoming Shifts</h2>
+            <p className="text-xs text-[#716A62]">
+              Track your confirmed assignments, countdown days left, and access directions on event day.
+            </p>
           </div>
 
           {myConfirmedEvents.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center border border-purple-100 shadow-sm">
-              <Calendar className="w-12 h-12 text-purple-300 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-gray-900">No confirmed upcoming events</h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                You haven&apos;t claimed any shifts yet. Explore open catering event postings to start working.
+            <div className="bg-[#FFFFFF] rounded-2xl p-12 text-center border border-[#E8E0D7] shadow-xs">
+              <Calendar className="w-10 h-10 text-[#716A62]/40 mx-auto mb-3" />
+              <h3 className="font-serif text-lg text-[#29251F]">No upcoming shifts assigned</h3>
+              <p className="text-xs text-[#716A62] mt-1 max-w-sm mx-auto">
+                You haven&apos;t claimed any shifts yet. Explore open catering posts to book your next shift.
               </p>
               <button
                 onClick={() => setActiveTab('shifts')}
-                className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-600 text-white hover:bg-purple-500"
+                className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold bg-[#B87333] text-white hover:bg-[#9E5F27]"
               >
                 Browse Open Shifts
               </button>
@@ -376,71 +381,71 @@ export default function WorkerDashboardClient({
                 return (
                   <div
                     key={event.id}
-                    className="bg-white rounded-3xl p-6 border border-emerald-200 shadow-sm flex flex-col justify-between"
+                    className="bg-[#FFFFFF] rounded-2xl p-6 border border-[#A8D5C2] shadow-xs flex flex-col justify-between"
                   >
-                    <div>
-                      {/* Requirement: Tracking Days Left */}
-                      <div className="flex items-center justify-between mb-4">
-                        <span className={`text-xs px-3.5 py-1.5 rounded-full border shadow-xs ${daysInfo.badgeClass}`}>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[11px] px-2.5 py-0.5 rounded-md border ${daysInfo.badgeClass}`}>
                           ⏳ {daysInfo.text}
                         </span>
 
-                        <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                        <span className="text-[10px] font-semibold text-[#235540] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2]">
                           Confirmed by Client
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
+                      <div>
+                        <h3 className="font-serif text-xl text-[#29251F] leading-snug">{event.name}</h3>
+                        <p className="text-xs text-[#716A62] flex items-center gap-1.5 mt-1">
+                          <MapPin className="w-3.5 h-3.5 text-[#B87333]" />
+                          <span>{event.place}</span>
+                        </p>
+                      </div>
 
-                      {/* Event Details: Date, Place, Days */}
-                      <div className="mt-4 bg-emerald-50/40 p-3.5 rounded-2xl border border-emerald-100 grid grid-cols-3 gap-2.5 text-xs text-gray-700">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span className="font-bold text-gray-900 truncate">{formatEventDate(event.event_date)}</span>
+                      {/* Specs */}
+                      <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] text-xs">
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Date</span>
+                          <span className="font-semibold text-[#29251F] truncate block">
+                            {formatEventDate(event.event_date)}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span className="truncate">{event.place}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span className="font-bold text-emerald-950 truncate">
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Duration</span>
+                          <span className="font-semibold text-[#29251F] truncate block">
                             {event.days} {event.days === 1 ? 'Day' : 'Days'}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] text-[#716A62] block">Pay Rate</span>
+                          <span className="font-semibold text-[#36785D] truncate block">
+                            {event.salary != null && !isNaN(Number(event.salary))
+                              ? `₹${Number(event.salary).toLocaleString('en-IN')}/${event.salary_unit || 'day'}`
+                              : 'Standard'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Salary Badge */}
-                      {event.salary != null && !isNaN(Number(event.salary)) && (
-                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100/80 text-emerald-900 border border-emerald-300 text-xs font-bold shadow-xs">
-                          <span className="text-emerald-700">💰 Pay Rate:</span>
-                          <span>₹{Number(event.salary).toLocaleString('en-IN')}</span>
-                          <span className="text-[11px] font-medium text-emerald-700 lowercase">
-                            / {event.salary_unit || 'day'}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Maps link */}
+                      {/* Map Navigation Link */}
                       {event.venue_map_url && (
                         <a
                           href={event.venue_map_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-100/70 hover:bg-emerald-200/80 px-3.5 py-2 rounded-xl transition-all"
+                          className="inline-flex items-center gap-2 text-xs font-semibold text-[#235540] bg-[#EBF5F0] hover:bg-[#A8D5C2]/40 px-3.5 py-2 rounded-lg border border-[#A8D5C2] transition-all"
                         >
-                          <MapPin className="w-4 h-4 text-emerald-700" />
+                          <MapPin className="w-3.5 h-3.5 text-[#36785D]" />
                           <span>Navigate to Venue with Google Maps</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                      <span>Assigned Worker: {workerProfile.full_name}</span>
-                      <span className="text-emerald-700 font-semibold">Attendance Registered</span>
+                    <div className="mt-5 pt-4 border-t border-[#E8E0D7] flex items-center justify-between text-xs text-[#716A62]">
+                      <span>Staff Member: <strong className="text-[#29251F]">{workerProfile.full_name}</strong></span>
+                      <span className="text-[#36785D] font-semibold">Attendance Logged</span>
                     </div>
                   </div>
                 );
@@ -450,17 +455,21 @@ export default function WorkerDashboardClient({
         </div>
       )}
 
+      {/* ========================================================================= */}
       {/* TAB 3: WORKER PROFILE */}
+      {/* ========================================================================= */}
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 shadow-sm max-w-2xl mx-auto">
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+        <div className="bg-[#FFFFFF] rounded-2xl p-6 sm:p-8 border border-[#E8E0D7] shadow-xs max-w-2xl mx-auto space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between pb-4 border-b border-[#E8E0D7]">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <User className="w-6 h-6 text-purple-700" />
-                Worker Profile Details
+              <span className="text-[10px] font-semibold text-[#B87333] uppercase tracking-wider block">
+                Account Details
+              </span>
+              <h2 className="font-serif text-2xl text-[#29251F] mt-0.5">
+                Staff Profile Information
               </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Keep your contact info and photo updated so coordinators can reach you for shifts.
+              <p className="text-xs text-[#716A62] mt-0.5">
+                Keep your mobile phone and address accurate so event coordinators can verify shift assignments.
               </p>
             </div>
 
@@ -469,37 +478,35 @@ export default function WorkerDashboardClient({
                 setIsEditingProfile(!isEditingProfile);
                 setProfileMsg(null);
               }}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#FAF8F5] text-[#716A62] hover:text-[#29251F] border border-[#E8E0D7] hover:border-[#B87333]/40 transition-colors"
             >
-              {isEditingProfile ? 'Cancel Editing' : 'Edit Information'}
+              {isEditingProfile ? 'Cancel' : 'Edit Information'}
             </button>
           </div>
 
           {profileMsg && (
             <div
-              className={`mb-6 p-4 rounded-2xl flex items-start gap-3 border ${
+              className={`p-3.5 rounded-xl flex items-start gap-2.5 border text-xs font-medium ${
                 profileMsg.type === 'success'
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                  : 'bg-red-50 border-red-200 text-red-800'
+                  ? 'bg-[#EBF5F0] border-[#A8D5C2] text-[#235540]'
+                  : 'bg-red-50/70 border-[#B94A48]/30 text-[#B94A48]'
               }`}
             >
               {profileMsg.type === 'success' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#36785D] shrink-0 mt-0.5" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-[#B94A48] shrink-0 mt-0.5" />
               )}
-              <div className="text-sm font-medium">{profileMsg.text}</div>
+              <div>{profileMsg.text}</div>
             </div>
           )}
 
           {isEditingProfile ? (
             /* Edit Form */
             <form onSubmit={handleProfileSubmit} className="space-y-4">
-
-              {/* Name */}
-              <div>
-                <label htmlFor="full_name" className="block text-xs font-semibold text-gray-800 mb-1">
-                  Full Name <span className="text-red-500">*</span>
+              <div className="space-y-1">
+                <label htmlFor="full_name" className="block text-xs font-semibold text-[#29251F]">
+                  Full Name <span className="text-[#B94A48]">*</span>
                 </label>
                 <input
                   id="full_name"
@@ -507,17 +514,16 @@ export default function WorkerDashboardClient({
                   required
                   type="text"
                   defaultValue={workerProfile.full_name}
-                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-[#E8E0D7] text-sm text-[#29251F] bg-white focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 outline-none font-medium"
                 />
               </div>
 
-              {/* Mobile Number */}
-              <div>
-                <label htmlFor="phone" className="block text-xs font-semibold text-gray-800 mb-1">
+              <div className="space-y-1">
+                <label htmlFor="phone" className="block text-xs font-semibold text-[#29251F]">
                   Mobile Number
                 </label>
-                <div className="relative rounded-xl">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                <div className="relative rounded-lg">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#716A62]">
                     <Phone className="h-4 w-4" />
                   </div>
                   <input
@@ -526,18 +532,17 @@ export default function WorkerDashboardClient({
                     type="tel"
                     defaultValue={workerProfile.phone || ''}
                     placeholder="+91 98765 43210"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#E8E0D7] text-sm text-[#29251F] bg-white focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 outline-none font-medium"
                   />
                 </div>
               </div>
 
-              {/* Address */}
-              <div>
-                <label htmlFor="address" className="block text-xs font-semibold text-gray-800 mb-1">
-                  Full Address
+              <div className="space-y-1">
+                <label htmlFor="address" className="block text-xs font-semibold text-[#29251F]">
+                  Residential Address
                 </label>
-                <div className="relative rounded-xl">
-                  <div className="absolute top-3 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                <div className="relative rounded-lg">
+                  <div className="absolute top-3 left-0 pl-3.5 flex items-center pointer-events-none text-[#716A62]">
                     <Home className="h-4 w-4" />
                   </div>
                   <textarea
@@ -545,31 +550,29 @@ export default function WorkerDashboardClient({
                     name="address"
                     rows={3}
                     defaultValue={workerProfile.address || ''}
-                    placeholder="Enter street, apartment, and city address..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
+                    placeholder="Enter street, area, and city address..."
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#E8E0D7] text-sm text-[#29251F] bg-white focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 outline-none font-medium"
                   />
                 </div>
               </div>
 
-              {/* Gmail Display Only */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Gmail / Account Email</label>
-                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600">
-                  <Mail className="w-4 h-4 text-purple-600" />
-                  <span>{userEmail} (Managed via Authentication)</span>
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-[#716A62]">Account Email</label>
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-[#FAF8F5] border border-[#E8E0D7] text-xs text-[#716A62]">
+                  <Mail className="w-4 h-4 text-[#716A62]" />
+                  <span>{userEmail} (Verified Auth)</span>
                 </div>
               </div>
 
-              {/* Save Button */}
               <button
                 type="submit"
                 disabled={isSavingProfile}
-                className="w-full mt-4 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 shadow-md shadow-purple-900/30 transition-all flex items-center justify-center gap-2"
+                className="w-full mt-2 py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-[#B87333] hover:bg-[#9E5F27] disabled:opacity-50 shadow-xs transition-all flex items-center justify-center gap-2"
               >
                 {isSavingProfile ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving Changes...
+                    <span>Saving Profile...</span>
                   </>
                 ) : (
                   'Save Profile Details'
@@ -579,64 +582,44 @@ export default function WorkerDashboardClient({
           ) : (
             /* Read-Only Profile Card */
             <div className="space-y-6">
-              {/* Profile Photo Display */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="w-24 h-24 rounded-3xl bg-purple-100 text-purple-800 font-extrabold flex items-center justify-center text-3xl overflow-hidden border-4 border-purple-200 shadow-md shrink-0">
-                  {workerProfile.avatar_url ? (
-                    <img
-                      src={workerProfile.avatar_url}
-                      alt={workerProfile.full_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    workerProfile.full_name.charAt(0).toUpperCase()
-                  )}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-[#282923] text-[#FAF8F5] font-serif font-bold text-2xl flex items-center justify-center shrink-0 border border-[#E8E0D7]">
+                  {workerProfile.full_name ? workerProfile.full_name.charAt(0).toUpperCase() : 'W'}
                 </div>
 
-                <div className="text-center sm:text-left space-y-1">
-                  <h3 className="text-xl font-bold text-gray-900">{workerProfile.full_name}</h3>
-                  <span className="inline-block px-3 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                    Catering Worker Member
+                <div className="space-y-1">
+                  <h3 className="font-serif text-xl text-[#29251F]">{workerProfile.full_name}</h3>
+                  <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-[#EBF5F0] text-[#235540] border border-[#A8D5C2] uppercase tracking-wider">
+                    Catering Staff Member
                   </span>
-                  <p className="text-xs text-gray-500 pt-1">
-                    Member since{' '}
-                    {new Date(workerProfile.created_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                  <p className="text-xs text-[#716A62]">
+                    Member since {new Date(workerProfile.created_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                   </p>
                 </div>
               </div>
 
-              {/* Profile Fields List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100 text-sm">
-                <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                    Gmail / Email
-                  </span>
-                  <p className="font-semibold text-gray-900 mt-0.5 flex items-center gap-2 truncate">
-                    <Mail className="w-4 h-4 text-purple-600 shrink-0" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-[#E8E0D7] text-xs">
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7]">
+                  <span className="text-[10px] font-semibold text-[#716A62] uppercase tracking-wider block">Gmail / Email</span>
+                  <p className="font-semibold text-[#29251F] mt-1 flex items-center gap-2 truncate">
+                    <Mail className="w-3.5 h-3.5 text-[#B87333] shrink-0" />
                     <span className="truncate">{workerProfile.email || userEmail}</span>
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                    Mobile Number
-                  </span>
-                  <p className="font-semibold text-gray-900 mt-0.5 flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-purple-600 shrink-0" />
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7]">
+                  <span className="text-[10px] font-semibold text-[#716A62] uppercase tracking-wider block">Mobile Phone</span>
+                  <p className="font-semibold text-[#29251F] mt-1 flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-[#B87333] shrink-0" />
                     <span>{workerProfile.phone || 'Not provided'}</span>
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100 sm:col-span-2">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                    Residential Address
-                  </span>
-                  <p className="font-semibold text-gray-900 mt-0.5 flex items-start gap-2">
-                    <Home className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-                    <span>{workerProfile.address || 'No address provided yet.'}</span>
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] sm:col-span-2">
+                  <span className="text-[10px] font-semibold text-[#716A62] uppercase tracking-wider block">Residential Address</span>
+                  <p className="font-medium text-[#29251F] mt-1 flex items-start gap-2">
+                    <Home className="w-3.5 h-3.5 text-[#B87333] shrink-0 mt-0.5" />
+                    <span>{workerProfile.address || 'No residential address on file.'}</span>
                   </p>
                 </div>
               </div>
@@ -645,56 +628,55 @@ export default function WorkerDashboardClient({
         </div>
       )}
 
-      {/* TAB 4: NOTIFICATIONS */}
+      {/* ========================================================================= */}
+      {/* TAB 4: SHIFT NOTIFICATIONS */}
+      {/* ========================================================================= */}
       {activeTab === 'notifications' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 shadow-sm max-w-2xl mx-auto">
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+        <div className="bg-[#FFFFFF] rounded-2xl p-6 sm:p-8 border border-[#E8E0D7] shadow-xs max-w-2xl mx-auto space-y-5 animate-fade-in">
+          <div className="flex items-center justify-between pb-4 border-b border-[#E8E0D7]">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <Bell className="w-6 h-6 text-purple-700" />
-                Shift & Event Notifications
+              <span className="text-[10px] font-semibold text-[#B87333] uppercase tracking-wider block">
+                Inbox
+              </span>
+              <h2 className="font-serif text-2xl text-[#29251F] mt-0.5">
+                Shift & Schedule Alerts
               </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Stay informed with shift updates, client confirmations, and event schedules.
-              </p>
             </div>
 
             {unreadCount > 0 && (
-              <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+              <span className="text-xs font-semibold text-[#235540] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2]">
                 {unreadCount} Unread
               </span>
             )}
           </div>
 
           {notifications.length === 0 ? (
-            <div className="py-12 text-center text-gray-500">
-              <Bell className="w-12 h-12 text-purple-200 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-gray-800">No notifications yet</p>
-              <p className="text-xs text-gray-400 mt-1">
-                You will be notified here whenever new events or shift assignments arrive.
-              </p>
+            <div className="py-12 text-center text-[#716A62]">
+              <Bell className="w-10 h-10 text-[#716A62]/30 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-[#29251F]">No notifications</p>
+              <p className="text-xs text-[#716A62] mt-0.5">You will receive alerts here when coordinators post new shifts.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  className={`p-4 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
+                  className={`p-3.5 rounded-xl border flex items-start justify-between gap-3 text-xs ${
                     notif.is_read
-                      ? 'bg-gray-50/60 border-gray-200 text-gray-600'
-                      : 'bg-purple-50/80 border-purple-200 text-purple-950 font-medium'
+                      ? 'bg-[#FAF8F5]/60 border-[#E8E0D7] text-[#716A62]'
+                      : 'bg-[#F9EFE6]/50 border-[#E5C3A5] text-[#29251F]'
                   }`}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      {!notif.is_read && <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>}
-                      <h4 className="text-sm font-bold">{notif.title}</h4>
+                      {!notif.is_read && <span className="w-2 h-2 rounded-full bg-[#B87333] shrink-0"></span>}
+                      <h4 className="font-semibold text-[#29251F]">{notif.title}</h4>
                     </div>
-                    <p className="text-xs text-gray-600 leading-relaxed">{notif.message}</p>
-                    <span className="text-[10px] text-gray-400 block pt-1">
-                      {new Date(notif.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
+                    <p className="text-[#716A62] leading-relaxed">{notif.message}</p>
+                    <span className="text-[10px] text-[#716A62]/70 block">
+                      {new Date(notif.created_at).toLocaleDateString('en-GB', {
                         day: 'numeric',
+                        month: 'short',
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -704,7 +686,7 @@ export default function WorkerDashboardClient({
                   {!notif.is_read && (
                     <button
                       onClick={() => handleMarkRead(notif.id)}
-                      className="text-xs font-semibold text-purple-700 hover:underline shrink-0"
+                      className="text-xs font-semibold text-[#B87333] hover:underline shrink-0"
                     >
                       Mark read
                     </button>

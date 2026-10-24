@@ -1,30 +1,92 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf8fd;
-  --foreground: #0f172a;
-}
+  --background: #FAF8F5;
+  --foreground: #29251F;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* CaterConnect Copper & Mint Palette */
+  --copper: #B87333;
+  --copper-hover: #9E5F27;
+  --copper-light: #F9EFE6;
+  --copper-border: #E5C3A5;
+
+  --mint: #A8D5C2;
+  --mint-light: #EBF5F0;
+  --mint-text: #235540;
+  --mint-border: #8EC4AF;
+
+  --surface: #FFFFFF;
+  --surface-alt: #F4EFEA;
+  --border-warm: #E8E0D7;
+  --border-subtle: #F0EAE1;
+
+  --text-primary: #29251F;
+  --text-secondary: #716A62;
+  --text-muted: #9E968D;
+
+  --dark-contrast: #282923;
+  --dark-hover: #35362E;
+
+  --success: #36785D;
+  --error: #B94A48;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure ultra-clear visibility for all form inputs regardless of OS dark/light mode */
+.font-serif {
+  font-family: var(--font-dm-serif), Georgia, Cambria, "Times New Roman", serif;
+}
+
+.font-sans {
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8CEBE;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B87333;
+}
+
+/* Clear, crisp input styles matching CaterConnect design rules */
 input, textarea, select {
-  color: #0f172a !important;
-  background-color: #ffffff !important;
+  color: #29251F !important;
+  background-color: #FFFFFF;
+  border-color: #E8E0D7;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #B87333 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.15) !important;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #9E968D !important;
   opacity: 1 !important;
+}
+
+/* Restrained animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

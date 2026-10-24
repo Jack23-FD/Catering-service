@@ -1,21 +1,22 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { DM_Serif_Display, DM_Sans } from 'next/font/google';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const dmSerif = DM_Serif_Display({
+  weight: ['400'],
   subsets: ['latin'],
+  variable: '--font-dm-serif',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const dmSans = DM_Sans({
   subsets: ['latin'],
+  variable: '--font-dm-sans',
 });
 
 export const metadata: Metadata = {
-  title: 'Catering Worker Booking Platform | Authentication & Shifts',
+  title: 'CaterConnect — Boutique Hospitality & Event Staffing Platform',
   description:
-    'Secure workforce authentication and scheduling platform for catering workers and event administrators.',
+    'A sophisticated platform connecting premier catering businesses with verified hospitality professionals and part-time event staff.',
 };
 
 export default function RootLayout({
@@ -26,9 +27,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSerif.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
+      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#29251F] font-sans selection:bg-[#A8D5C2] selection:text-[#282923]">
         {children}
       </body>
     </html>

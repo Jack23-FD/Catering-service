@@ -76,14 +76,14 @@ export default async function AdminDashboardPage() {
   const assignments: EventAssignment[] = assignmentsData || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col selection:bg-[#A8D5C2] selection:text-[#282923]">
       <Navbar
         userEmail={user.email}
         userName={adminName}
         role="admin"
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <div className="flex-1 w-full">
         <AdminDashboardClient
           adminProfile={{
             ...profile,
@@ -93,7 +93,7 @@ export default async function AdminDashboardPage() {
           initialWorkers={workers}
           initialAssignments={assignments}
         />
-      </main>
+      </div>
     </div>
   );
 }

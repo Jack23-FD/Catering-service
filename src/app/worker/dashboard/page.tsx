@@ -73,7 +73,7 @@ export default async function WorkerDashboardPage() {
   const notifications: AppNotification[] = notificationsData || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col selection:bg-[#A8D5C2] selection:text-[#282923]">
       <Navbar
         userEmail={user.email}
         userName={workerProfile.full_name}

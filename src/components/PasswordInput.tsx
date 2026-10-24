@@ -25,14 +25,14 @@ export default function PasswordInput({
       <div className="flex justify-between items-center">
         <label
           htmlFor={id}
-          className="block text-sm font-medium text-gray-700 select-none"
+          className="block text-xs font-semibold text-[#29251F] select-none"
         >
           {label}
         </label>
       </div>
 
-      <div className="relative rounded-xl shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+      <div className="relative rounded-lg">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#716A62]">
           <Lock className="h-4 w-4" aria-hidden="true" />
         </div>
 
@@ -41,10 +41,10 @@ export default function PasswordInput({
           type={showPassword ? 'text' : 'password'}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
-          className={`block w-full pl-10 pr-11 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
+          className={`block w-full pl-10 pr-11 py-2.5 text-sm rounded-lg border transition-all duration-150 outline-none ${
             error
-              ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50/30'
-              : 'border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300'
+              ? 'border-[#B94A48] text-[#B94A48] placeholder-red-300 focus:ring-2 focus:ring-[#B94A48]/20 bg-red-50/20'
+              : 'border-[#E8E0D7] text-[#29251F] placeholder-[#9E968D] focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 bg-white hover:border-[#B87333]/40'
           } ${className}`}
           {...props}
         />
@@ -52,7 +52,7 @@ export default function PasswordInput({
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-purple-700 focus:outline-none transition-colors"
+          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#716A62] hover:text-[#B87333] focus:outline-none transition-colors"
           tabIndex={0}
           aria-label={showPassword ? `Hide ${label}` : `Show ${label}`}
         >
@@ -65,11 +65,11 @@ export default function PasswordInput({
       </div>
 
       {error ? (
-        <p id={`${id}-error`} className="text-xs text-red-600 font-medium">
+        <p id={`${id}-error`} className="text-xs text-[#B94A48] font-medium">
           {error}
         </p>
       ) : helperText ? (
-        <p id={`${id}-helper`} className="text-xs text-gray-500">
+        <p id={`${id}-helper`} className="text-xs text-[#716A62]">
           {helperText}
         </p>
       ) : null}

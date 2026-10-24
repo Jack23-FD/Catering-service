@@ -2,7 +2,18 @@ import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { ChefHat, ShieldCheck, UserCheck, ArrowRight, Sparkles, Lock } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
+  MapPin,
+  Sparkles,
+  Banknote,
+  UtensilsCrossed,
+} from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +25,6 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    // Redirect authenticated users to their corresponding dashboard
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -29,118 +39,177 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-900 to-indigo-950 text-white flex flex-col justify-between relative overflow-hidden">
-      {/* Decorative Glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
-      </div>
-
-      {/* Header */}
-      <header className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-900/40">
-            <ChefHat className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-[#FAF8F5] text-[#29251F] flex flex-col justify-between selection:bg-[#A8D5C2] selection:text-[#282923]">
+      {/* Top Navigation */}
+      <header className="border-b border-[#E8E0D7] bg-[#FFFFFF]/90 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Brand */}
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg bg-[#282923] border border-[#E8E0D7] flex items-center justify-center shadow-xs">
+              <span className="font-serif text-[#B87333] text-xl font-bold">C</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C2] -ml-0.5 mt-1.5"></span>
+            </div>
+            <div>
+              <span className="font-serif text-2xl tracking-tight text-[#29251F]">
+                Cater<span className="font-sans font-semibold text-[#B87333]">Connect</span>
+              </span>
+              <span className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-[#716A62] -mt-1">
+                Hospitality Staffing System
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
-              Catering<span className="text-purple-300 font-medium">Workers</span>
-            </span>
-            <span className="block text-[10px] text-purple-300 uppercase tracking-widest font-semibold">
-              Booking Platform
-            </span>
-          </div>
-        </div>
 
-        <div className="flex items-center space-x-3">
-          <Link
-            href="/login"
-            className="text-xs sm:text-sm font-medium text-purple-200 hover:text-white px-3.5 py-2 rounded-xl transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl shadow-md shadow-purple-900/30 transition-all"
-          >
-            Register
-          </Link>
+          {/* Action Links */}
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-[#716A62] hover:text-[#29251F] px-3 py-2 transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 text-sm font-semibold bg-[#B87333] hover:bg-[#9E5F27] text-white px-4 py-2.5 rounded-lg shadow-xs transition-all duration-150"
+            >
+              <span>Join Workforce</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-purple-800/80 text-purple-200 border border-purple-700/80 mb-6 backdrop-blur-md">
-          <Sparkles className="w-4 h-4 text-purple-300" />
-          <span>Professional Workforce Scheduling System</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight sm:leading-none">
-          Catering Worker <br className="hidden sm:inline" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-white to-purple-300">
-            Booking & Authentication
-          </span>
-        </h1>
-
-        <p className="mt-6 text-base sm:text-lg text-purple-200 max-w-2xl mx-auto leading-relaxed">
-          Secure, role-based platform designed for catering staff, banquet servers, and event administrators. Access verified shifts and manage workforce operations.
-        </p>
-
-        {/* Action Buttons */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/register"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-xl text-base font-semibold text-white bg-purple-600 hover:bg-purple-500 shadow-xl shadow-purple-900/50 transition-all duration-150 group"
-          >
-            Register as Worker
-            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Link>
-
-          <Link
-            href="/login"
-            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-xl text-base font-semibold text-purple-100 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all duration-150"
-          >
-            Sign In to Account
-          </Link>
-        </div>
-
-        {/* Feature Badges */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center mb-3">
-              <UserCheck className="w-5 h-5 text-purple-300" />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Column: Editorial Headline & Value Prop */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F9EFE6] text-[#B87333] border border-[#E5C3A5]">
+              <Sparkles className="w-3.5 h-3.5 text-[#B87333]" />
+              <span>Boutique Hospitality & Catering Staffing</span>
             </div>
-            <h3 className="font-semibold text-white text-sm">Worker Dashboard</h3>
-            <p className="text-xs text-purple-200/80 mt-1">
-              Dedicated portal for catering staff to view profile info and upcoming event shifts.
+
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-[#29251F] leading-[1.12] tracking-tight">
+              Where premier catering meets dedicated event staff.
+            </h1>
+
+            <p className="text-base sm:text-lg text-[#716A62] max-w-xl leading-relaxed">
+              CaterConnect pairs upscale banquets, weddings, and corporate dining teams with skilled, verified part-time servers, bartenders, and kitchen associates — with transparent wages and verified rosters.
             </p>
+
+            {/* CTAs */}
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold bg-[#B87333] hover:bg-[#9E5F27] text-white shadow-xs transition-all duration-150 group"
+              >
+                <span>Register as Part-Time Worker</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-semibold bg-[#FFFFFF] hover:bg-[#FAF8F5] text-[#29251F] border border-[#E8E0D7] hover:border-[#B87333]/40 shadow-xs transition-all duration-150"
+              >
+                <span>Catering Business Login</span>
+              </Link>
+            </div>
+
+            {/* Quick Guarantees */}
+            <div className="pt-6 border-t border-[#E8E0D7] grid grid-cols-3 gap-4 text-xs">
+              <div className="space-y-1">
+                <span className="font-serif text-lg font-bold text-[#29251F]">100%</span>
+                <p className="text-[#716A62]">Direct Contact & Verified Phone Numbers</p>
+              </div>
+              <div className="space-y-1">
+                <span className="font-serif text-lg font-bold text-[#B87333]">₹ Clear</span>
+                <p className="text-[#716A62]">Hourly, Daily, or Per-Serve Pay Rates</p>
+              </div>
+              <div className="space-y-1">
+                <span className="font-serif text-lg font-bold text-[#36785D]">Live Maps</span>
+                <p className="text-[#716A62]">Turn-by-turn Venue Navigation</p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center mb-3">
-              <ShieldCheck className="w-5 h-5 text-amber-300" />
-            </div>
-            <h3 className="font-semibold text-white text-sm">Admin Control</h3>
-            <p className="text-xs text-purple-200/80 mt-1">
-              Protected administrative area with server-side authorization and roster management.
-            </p>
-          </div>
+          {/* Right Column: Architectural Preview Card */}
+          <div className="lg:col-span-5">
+            <div className="bg-[#FFFFFF] rounded-2xl border border-[#E8E0D7] p-6 sm:p-7 shadow-[0_4px_20px_rgba(40,41,35,0.06)] space-y-5">
+              <div className="flex items-center justify-between pb-4 border-b border-[#E8E0D7]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#A8D5C2]"></div>
+                  <span className="text-xs font-semibold text-[#716A62] uppercase tracking-wider">
+                    Live Shift Posting
+                  </span>
+                </div>
+                <span className="text-[11px] font-semibold text-[#36785D] bg-[#EBF5F0] px-2.5 py-0.5 rounded-md border border-[#A8D5C2]">
+                  Available Today
+                </span>
+              </div>
 
-          <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-3">
-              <Lock className="w-5 h-5 text-emerald-300" />
+              <div>
+                <span className="text-xs font-semibold text-[#B87333] uppercase tracking-wider">
+                  Grand Banquet Event
+                </span>
+                <h3 className="font-serif text-xl sm:text-2xl text-[#29251F] mt-1">
+                  Royal Garden Heritage Gala
+                </h3>
+                <p className="text-xs text-[#716A62] mt-1 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#B87333]" />
+                  Taj Connemara & Convention Center, Chennai
+                </p>
+              </div>
+
+              {/* Specs Grid */}
+              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D7] text-xs">
+                <div>
+                  <span className="text-[11px] text-[#716A62] block">Duration</span>
+                  <span className="font-semibold text-[#29251F] flex items-center gap-1 mt-0.5">
+                    <Clock className="w-3.5 h-3.5 text-[#B87333]" />
+                    2 Consecutive Days
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#716A62] block">Compensation</span>
+                  <span className="font-semibold text-[#36785D] flex items-center gap-1 mt-0.5">
+                    <Banknote className="w-3.5 h-3.5 text-[#36785D]" />
+                    ₹1,200 / Day
+                  </span>
+                </div>
+              </div>
+
+              {/* Staffing Status */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-[#716A62]">Crew Confirmed</span>
+                  <span className="text-[#29251F]">8 of 10 Positions Filled</span>
+                </div>
+                <div className="w-full bg-[#E8E0D7] h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#B87333] h-full rounded-full" style={{ width: '80%' }}></div>
+                </div>
+              </div>
+
+              {/* Sample Action */}
+              <Link
+                href="/login"
+                className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold text-center text-[#282923] bg-[#FAF8F5] hover:bg-[#F9EFE6] hover:text-[#B87333] border border-[#E8E0D7] hover:border-[#E5C3A5] transition-all block"
+              >
+                Sign in to view open shifts & roster details →
+              </Link>
             </div>
-            <h3 className="font-semibold text-white text-sm">Row Level Security</h3>
-            <p className="text-xs text-purple-200/80 mt-1">
-              Database-enforced security policies preventing privilege escalation and data leaks.
-            </p>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-purple-300/60 border-t border-purple-800/40">
-        Catering Worker Booking Platform &copy; {new Date().getFullYear()}. Secure Supabase SSR Authentication.
+      <footer className="border-t border-[#E8E0D7] bg-[#FFFFFF] py-8 text-center text-xs text-[#716A62]">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} CaterConnect. Handcrafted event staffing for contemporary hospitality.</p>
+          <div className="flex items-center space-x-6 text-[#716A62]">
+            <Link href="/login" className="hover:text-[#B87333] transition-colors">Admin Portal</Link>
+            <Link href="/register" className="hover:text-[#B87333] transition-colors">Worker Portal</Link>
+            <span>Verified Credentials</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

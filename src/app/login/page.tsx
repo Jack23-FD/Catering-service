@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, ChefHat, AlertCircle, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, AlertCircle, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import PasswordInput from '@/components/PasswordInput';
 
@@ -32,7 +32,6 @@ function LoginForm() {
     try {
       const supabase = createClient();
 
-      // Sign in with password
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -51,25 +50,19 @@ function LoginForm() {
       }
 
       if (!data.user) {
-        setError('Authentication failed. No user found.');
+        setError('Authentication failed. No user record found.');
         setIsLoading(false);
         return;
       }
 
-      // Securely retrieve the user's role from profiles
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('role, full_name')
         .eq('id', data.user.id)
         .maybeSingle();
 
-      if (profileError) {
-        console.warn('Profile fetch note:', profileError.message);
-      }
+      setSuccess('Authentication successful! Directing to workspace...');
 
-      setSuccess('Login successful! Directing to your workspace...');
-
-      // Role-based routing
       const role = profile?.role;
       let destination = '/worker/dashboard';
 
@@ -86,7 +79,7 @@ function LoginForm() {
       setTimeout(() => {
         router.push(destination);
         router.refresh();
-      }, 800);
+      }, 700);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'An unexpected error occurred while logging in.';
@@ -96,34 +89,34 @@ function LoginForm() {
   };
 
   return (
-    <div className="mt-8 bg-white/95 backdrop-blur-md py-8 px-6 sm:px-10 shadow-2xl rounded-3xl border border-white/20">
+    <div className="mt-8 bg-[#FFFFFF] p-7 sm:p-9 rounded-2xl border border-[#E8E0D7] shadow-[0_4px_24px_rgba(40,41,35,0.04)]">
       {/* Success Notification */}
       {success && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-emerald-800 font-medium">{success}</div>
+        <div className="mb-6 p-3.5 rounded-xl bg-[#EBF5F0] border border-[#A8D5C2] flex items-start gap-2.5">
+          <CheckCircle2 className="w-4 h-4 text-[#36785D] shrink-0 mt-0.5" />
+          <div className="text-xs text-[#235540] font-medium">{success}</div>
         </div>
       )}
 
       {/* Error Notification */}
       {error && (
-        <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-red-800 font-medium">{error}</div>
+        <div className="mb-6 p-3.5 rounded-xl bg-red-50/70 border border-[#B94A48]/30 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-[#B94A48] shrink-0 mt-0.5" />
+          <div className="text-xs text-[#B94A48] font-medium">{error}</div>
         </div>
       )}
 
-      <form className="space-y-5" onSubmit={handleLogin} noValidate>
+      <form className="space-y-4" onSubmit={handleLogin} noValidate>
         {/* Email Address */}
         <div className="space-y-1.5 text-left">
           <label
             htmlFor="login-email"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-xs font-semibold text-[#29251F]"
           >
             Email Address
           </label>
-          <div className="relative rounded-xl shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+          <div className="relative rounded-lg">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#716A62]">
               <Mail className="h-4 w-4" />
             </div>
             <input
@@ -132,10 +125,10 @@ function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              placeholder="worker@example.com or admin@example.com"
+              placeholder="worker@hospitality.com or admin@caterconnect.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300 transition-all duration-150 outline-none"
+              className="block w-full pl-10 pr-3.5 py-2.5 text-sm rounded-lg border border-[#E8E0D7] text-[#29251F] placeholder-[#9E968D] focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/15 bg-white hover:border-[#B87333]/40 transition-all outline-none"
             />
           </div>
         </div>
@@ -145,7 +138,7 @@ function LoginForm() {
           id="login-password"
           name="password"
           label="Password"
-          placeholder="Enter your password"
+          placeholder="Enter your account password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -154,16 +147,16 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex justify-center items-center py-3 px-4 rounded-xl shadow-lg shadow-purple-900/30 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 group"
+          className="w-full mt-2 flex justify-center items-center py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-[#B87333] hover:bg-[#9E5F27] focus:outline-none focus:ring-2 focus:ring-[#B87333]/30 disabled:opacity-60 disabled:cursor-not-allowed shadow-xs transition-all duration-150 group"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Signing in...
+              Signing In...
             </>
           ) : (
             <>
-              Sign In to Platform
+              Sign In to Workspace
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
             </>
           )}
@@ -171,14 +164,14 @@ function LoginForm() {
       </form>
 
       {/* Switch to Register */}
-      <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-        <p className="text-sm text-gray-600">
-          New catering worker?{' '}
+      <div className="mt-6 pt-5 border-t border-[#E8E0D7] text-center">
+        <p className="text-xs text-[#716A62]">
+          Looking for part-time catering shifts?{' '}
           <Link
             href="/register"
-            className="font-semibold text-purple-700 hover:text-purple-600 hover:underline transition-colors"
+            className="font-semibold text-[#B87333] hover:text-[#9E5F27] hover:underline transition-colors"
           >
-            Register for shifts here
+            Register as staff here
           </Link>
         </p>
       </div>
@@ -188,31 +181,37 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-900 to-indigo-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Decorative background glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
-        {/* Branding */}
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-[#A8D5C2] selection:text-[#282923]">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
+        {/* Branding Crest */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-xl shadow-purple-950/50 mb-4 ring-4 ring-purple-500/20">
-            <ChefHat className="w-8 h-8 text-purple-700" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Sign In to Catering Hub
+          <Link href="/" className="inline-flex items-center space-x-2.5 group">
+            <div className="w-11 h-11 rounded-lg bg-[#282923] border border-[#E8E0D7] flex items-center justify-center shadow-xs">
+              <span className="font-serif text-[#B87333] text-xl font-bold">C</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C2] -ml-0.5 mt-1.5"></span>
+            </div>
+            <div className="text-left">
+              <span className="font-serif text-2xl tracking-tight text-[#29251F]">
+                Cater<span className="font-sans font-semibold text-[#B87333]">Connect</span>
+              </span>
+              <span className="block text-[9px] uppercase tracking-[0.2em] font-semibold text-[#716A62] -mt-1">
+                Hospitality Staffing
+              </span>
+            </div>
+          </Link>
+
+          <h1 className="font-serif text-2xl sm:text-3xl text-[#29251F] tracking-tight mt-6">
+            Sign In to Workspace
           </h1>
-          <p className="mt-2 text-sm text-purple-200">
-            Access your shifts, bookings, and dashboard
+          <p className="mt-1 text-xs text-[#716A62]">
+            Access your catering schedule, active shifts, and management roster
           </p>
         </div>
 
         <Suspense
           fallback={
-            <div className="mt-8 bg-white/95 backdrop-blur-md py-12 px-6 rounded-3xl flex justify-center items-center">
-              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+            <div className="mt-8 bg-white p-12 rounded-2xl border border-[#E8E0D7] flex justify-center items-center">
+              <Loader2 className="w-6 h-6 text-[#B87333] animate-spin" />
             </div>
           }
         >
