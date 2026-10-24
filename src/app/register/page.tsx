@@ -3,7 +3,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Mail, ChefHat, CheckCircle2, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import {
+  User,
+  Mail,
+  ChefHat,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Loader2,
+  Phone,
+  Home,
+  Camera,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import PasswordInput from '@/components/PasswordInput';
 
@@ -11,12 +22,17 @@ export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [errors, setErrors] = useState<{
     fullName?: string;
     email?: string;
+    phone?: string;
+    address?: string;
     password?: string;
     confirmPassword?: string;
     general?: string;
@@ -39,6 +55,16 @@ export default function RegisterPage() {
       newErrors.email = 'Email address is required';
     } else if (!emailRegex.test(email.trim())) {
       newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!phone.trim()) {
+      newErrors.phone = 'Mobile number is required for event coordinator contact';
+    } else if (phone.trim().length < 7) {
+      newErrors.phone = 'Please enter a valid mobile number';
+    }
+
+    if (!address.trim()) {
+      newErrors.address = 'Residential address is required';
     }
 
     if (!password) {
@@ -74,6 +100,9 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: fullName.trim(),
+            phone: phone.trim(),
+            address: address.trim(),
+            avatar_url: avatarUrl.trim() || null,
           },
         },
       });
@@ -98,6 +127,9 @@ export default function RegisterPage() {
             id: user.id,
             full_name: fullName.trim(),
             email: email.trim(),
+            phone: phone.trim() || null,
+            address: address.trim() || null,
+            avatar_url: avatarUrl.trim() || null,
             role: 'worker',
           }, { onConflict: 'id' });
 
@@ -127,7 +159,7 @@ export default function RegisterPage() {
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg relative z-10 px-4">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-xl shadow-purple-950/50 mb-4 ring-4 ring-purple-500/20">
             <ChefHat className="w-8 h-8 text-purple-700" />
@@ -136,7 +168,7 @@ export default function RegisterPage() {
             Worker Registration
           </h1>
           <p className="mt-2 text-sm text-purple-200">
-            Join our platform to access catering shifts and event bookings
+            Join our workforce roster to receive catering event shift bookings
           </p>
         </div>
 
@@ -159,13 +191,14 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form className="space-y-5" onSubmit={handleRegister} noValidate>
-            <div className="space-y-1.5">
+          <form className="space-y-4" onSubmit={handleRegister} noValidate>
+            {/* Full Name */}
+            <div className="space-y-1">
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs font-semibold text-gray-700"
               >
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
@@ -194,12 +227,13 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="space-y-1.5">
+            {/* Email Address */}
+            <div className="space-y-1">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs font-semibold text-gray-700"
               >
-                Email Address
+                Gmail / Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
@@ -211,7 +245,7 @@ export default function RegisterPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  placeholder="worker@example.com"
+                  placeholder="worker@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
@@ -228,6 +262,102 @@ export default function RegisterPage() {
               )}
             </div>
 
+            {/* Mobile Number & Photo URL in a 2-col row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Mobile Number */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="phone"
+                  className="block text-xs font-semibold text-gray-700"
+                >
+                  Mobile Number <span className="text-red-500">*</span>
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className={`block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
+                      errors.phone
+                        ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50/30'
+                        : 'border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300'
+                    }`}
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-xs text-red-600 font-medium">
+                    {errors.phone}
+                  </p>
+                )}
+              </div>
+
+              {/* Profile Photo URL */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="avatarUrl"
+                  className="block text-xs font-semibold text-gray-700"
+                >
+                  Profile Photo URL <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
+                <div className="relative rounded-xl shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                    <Camera className="h-4 w-4" />
+                  </div>
+                  <input
+                    id="avatarUrl"
+                    name="avatarUrl"
+                    type="url"
+                    placeholder="https://... photo link"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    className="block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300 transition-all duration-150 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-1">
+              <label
+                htmlFor="address"
+                className="block text-xs font-semibold text-gray-700"
+              >
+                Residential Address <span className="text-red-500">*</span>
+              </label>
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
+                  <Home className="h-4 w-4" />
+                </div>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  required
+                  placeholder="e.g. 14 Gandhi Road, T. Nagar, Chennai"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className={`block w-full pl-10 pr-3.5 py-2.5 sm:text-sm rounded-xl border transition-all duration-150 outline-none ${
+                    errors.address
+                      ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50/30'
+                      : 'border-purple-200 text-gray-900 placeholder-gray-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white hover:border-purple-300'
+                  }`}
+                />
+              </div>
+              {errors.address && (
+                <p className="text-xs text-red-600 font-medium">
+                  {errors.address}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
             <PasswordInput
               id="password"
               name="password"
@@ -238,6 +368,7 @@ export default function RegisterPage() {
               error={errors.password}
             />
 
+            {/* Confirm Password */}
             <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
@@ -249,8 +380,7 @@ export default function RegisterPage() {
             />
 
             <div className="p-3 bg-purple-50 rounded-xl text-[12px] text-purple-700 leading-relaxed border border-purple-100">
-              <span className="font-semibold">Note:</span> Public accounts are registered with the verified{' '}
-              <span className="font-semibold underline">Worker</span> role.
+              <span className="font-semibold">Note:</span> Registered details (mobile number, address, and profile photo) will be immediately visible to platform event coordinators.
             </div>
 
             <button
@@ -261,7 +391,7 @@ export default function RegisterPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating Account...
+                  Registering Worker...
                 </>
               ) : (
                 <>
