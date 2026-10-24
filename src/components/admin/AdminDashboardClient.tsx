@@ -462,6 +462,47 @@ export default function AdminDashboardClient({
               </div>
             </div>
 
+            {/* 3. Salary & Unit (e.g. day, hour, serve, shift, event) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="salary" className="block text-sm font-semibold text-gray-800 mb-1">
+                  Salary / Wage Amount (₹) <span className="text-purple-600 font-normal text-xs">(e.g. 800, 1200)</span>
+                </label>
+                <div className="relative rounded-xl">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-700 font-bold text-sm">
+                    ₹
+                  </div>
+                  <input
+                    id="salary"
+                    name="salary"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="e.g. 800"
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="salary_unit" className="block text-sm font-semibold text-gray-800 mb-1">
+                  Salary Unit / Pay Basis
+                </label>
+                <select
+                  id="salary_unit"
+                  name="salary_unit"
+                  defaultValue="day"
+                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm text-gray-900 bg-white font-medium"
+                >
+                  <option value="day">Per Day (/ Day)</option>
+                  <option value="hour">Per Hour (/ Hour)</option>
+                  <option value="serve">Per Serve (/ Serve)</option>
+                  <option value="shift">Per Shift (/ Shift)</option>
+                  <option value="event">Per Event (/ Event)</option>
+                </select>
+              </div>
+            </div>
+
             {/* 3. Venue Google Maps Location */}
             <div>
               <label htmlFor="venue_map_url" className="block text-sm font-semibold text-gray-800 mb-1">
@@ -607,6 +648,17 @@ export default function AdminDashboardClient({
                           </span>
                         </div>
                       </div>
+
+                      {/* Salary Badge */}
+                      {event.salary != null && !isNaN(Number(event.salary)) && (
+                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shadow-xs">
+                          <span className="text-emerald-600">💰 Salary:</span>
+                          <span>₹{Number(event.salary).toLocaleString('en-IN')}</span>
+                          <span className="text-[11px] font-medium text-emerald-600 lowercase">
+                            / {event.salary_unit || 'day'}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Google Maps Venue Link */}
                       {event.venue_map_url ? (

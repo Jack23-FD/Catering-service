@@ -283,6 +283,17 @@ export default function WorkerDashboardClient({
                         </div>
                       </div>
 
+                      {/* Salary Badge */}
+                      {event.salary != null && !isNaN(Number(event.salary)) && (
+                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold shadow-xs">
+                          <span className="text-emerald-600">💰 Salary:</span>
+                          <span>₹{Number(event.salary).toLocaleString('en-IN')}</span>
+                          <span className="text-[11px] font-medium text-emerald-600 lowercase">
+                            / {event.salary_unit || 'day'}
+                          </span>
+                        </div>
+                      )}
+
                       {/* Venue Google Maps Location */}
                       {event.venue_map_url ? (
                         <a
@@ -401,6 +412,17 @@ export default function WorkerDashboardClient({
                           </span>
                         </div>
                       </div>
+
+                      {/* Salary Badge */}
+                      {event.salary != null && !isNaN(Number(event.salary)) && (
+                        <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100/80 text-emerald-900 border border-emerald-300 text-xs font-bold shadow-xs">
+                          <span className="text-emerald-700">💰 Pay Rate:</span>
+                          <span>₹{Number(event.salary).toLocaleString('en-IN')}</span>
+                          <span className="text-[11px] font-medium text-emerald-700 lowercase">
+                            / {event.salary_unit || 'day'}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Maps link */}
                       {event.venue_map_url && (

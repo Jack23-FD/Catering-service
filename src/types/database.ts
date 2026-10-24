@@ -22,6 +22,8 @@ export interface CateringEvent {
   food: string;
   days: number;
   hours: string;
+  salary?: number | null;
+  salary_unit?: string | null;
   venue_map_url?: string;
   collaborator?: string;
   status: EventStatus;

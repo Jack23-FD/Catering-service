@@ -38,6 +38,9 @@ export async function createEventPost(formData: FormData) {
   const event_date = formData.get('event_date') as string;
   const place = formData.get('place') as string;
   const days = parseInt((formData.get('days') as string) || '1', 10);
+  const salaryRaw = (formData.get('salary') as string)?.trim();
+  const salary = salaryRaw ? parseFloat(salaryRaw) : null;
+  const salary_unit = ((formData.get('salary_unit') as string) || 'day').trim().toLowerCase();
   const venue_map_url = (formData.get('venue_map_url') as string) || '';
 
   if (!name || !event_date || !place) {
@@ -59,24 +62,37 @@ export async function createEventPost(formData: FormData) {
     status = 'upcoming';
   }
 
-  const { data: event, error } = await supabase
+  const insertPayload: Record<string, unknown> = {
+    name: name.trim(),
+    event_date,
+    place: place.trim(),
+    food: 'Catering Service',
+    days: isNaN(days) || days < 1 ? 1 : days,
+    hours: 'Standard Shift',
+    venue_map_url: venue_map_url.trim() || null,
+    collaborator: null,
+    status,
+    created_by: user.id,
+    salary: salary !== null && !isNaN(salary) ? salary : null,
+    salary_unit: salary_unit || 'day',
+  };
+
+  let { data: event, error } = await supabase
     .from('events')
-    .insert({
-      name: name.trim(),
-      event_date,
-      place: place.trim(),
-      food: 'Catering Service',
-      days: isNaN(days) || days < 1 ? 1 : days,
-      hours: 'Standard Shift',
-      venue_map_url: venue_map_url.trim() || null,
-      collaborator: null,
-      status,
-      created_by: user.id,
-    })
+    .insert(insertPayload)
     .select()
     .single();
 
-  if (error) {
+  // If column doesn't exist yet in Supabase schema, retry without salary columns
+  if (error && error.message?.toLowerCase().includes('column "salary"')) {
+    delete insertPayload.salary;
+    delete insertPayload.salary_unit;
+    const retry = await supabase.from('events').insert(insertPayload).select().single();
+    if (retry.error) {
+      return { success: false, error: retry.error.message };
+    }
+    event = retry.data;
+  } else if (error) {
     return { success: false, error: error.message };
   }
 
