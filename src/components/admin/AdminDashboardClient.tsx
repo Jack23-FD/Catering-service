@@ -8,14 +8,12 @@ import {
   PlusCircle,
   MapPin,
   Clock,
-  Utensils,
   ExternalLink,
   Trash2,
   Phone,
   Mail,
   Home,
   UserCheck,
-  Building2,
   CalendarDays,
   Sparkles,
   AlertCircle,
@@ -44,7 +42,6 @@ export default function AdminDashboardClient({
 }: AdminDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'events' | 'workers'>('overview');
   const [eventFilter, setEventFilter] = useState<'all' | 'current' | 'upcoming' | 'past'>('all');
-  const [collaboratorFilter, setCollaboratorFilter] = useState<string>('all');
   const [searchWorker, setSearchWorker] = useState('');
 
   // Form State
@@ -61,15 +58,9 @@ export default function AdminDashboardClient({
   const pastEvents = initialEvents.filter((e) => e.status === 'past').length;
   const totalWorkers = initialWorkers.length;
 
-  // Unique collaborators for filter dropdown
-  const uniqueCollaborators = Array.from(
-    new Set(initialEvents.map((e) => e.collaborator).filter(Boolean))
-  ) as string[];
-
   // Filtered events
   const filteredEvents = initialEvents.filter((event) => {
     if (eventFilter !== 'all' && event.status !== eventFilter) return false;
-    if (collaboratorFilter !== 'all' && event.collaborator !== collaboratorFilter) return false;
     return true;
   });
 
@@ -426,8 +417,8 @@ export default function AdminDashboardClient({
               />
             </div>
 
-            {/* 2. Date & Place */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 2. Date, Place & Number of Days */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="event_date" className="block text-sm font-semibold text-gray-700 mb-1">
                   Event Date <span className="text-red-500">*</span>
@@ -454,65 +445,24 @@ export default function AdminDashboardClient({
                   className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
                 />
               </div>
-            </div>
 
-            {/* 3. Catering Details Header */}
-            <div className="bg-purple-50/60 p-4 rounded-2xl border border-purple-100 space-y-4">
-              <h3 className="font-semibold text-purple-950 text-sm flex items-center gap-2">
-                <Utensils className="w-4 h-4 text-purple-700" />
-                Catering Details
-              </h3>
-
-              {/* Food */}
               <div>
-                <label htmlFor="food" className="block text-xs font-semibold text-gray-700 mb-1">
-                  Food Menu / Type <span className="text-red-500">*</span>
+                <label htmlFor="days" className="block text-sm font-semibold text-gray-700 mb-1">
+                  Number of Days <span className="text-red-500">*</span>
                 </label>
                 <input
-                  id="food"
-                  name="food"
+                  id="days"
+                  name="days"
                   required
-                  type="text"
-                  placeholder="e.g. Multi-Cuisine Buffet, South Indian Traditional, Continental Dinner"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
+                  type="number"
+                  min="1"
+                  defaultValue="1"
+                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Days */}
-                <div>
-                  <label htmlFor="days" className="block text-xs font-semibold text-gray-700 mb-1">
-                    Number of Days <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="days"
-                    name="days"
-                    required
-                    type="number"
-                    min="1"
-                    defaultValue="1"
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
-                  />
-                </div>
-
-                {/* Hours */}
-                <div>
-                  <label htmlFor="hours" className="block text-xs font-semibold text-gray-700 mb-1">
-                    Shift Hours <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="hours"
-                    name="hours"
-                    required
-                    type="text"
-                    placeholder="e.g. 8 Hours (9:00 AM - 5:00 PM)"
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
-                  />
-                </div>
               </div>
             </div>
 
-            {/* 4. Venue Google Maps Location */}
+            {/* 3. Venue Google Maps Location */}
             <div>
               <label htmlFor="venue_map_url" className="block text-sm font-semibold text-gray-700 mb-1">
                 Venue – Google Maps Location URL
@@ -532,43 +482,6 @@ export default function AdminDashboardClient({
               <p className="text-[11px] text-gray-500 mt-1">
                 Workers can tap this link on their phones to get turn-by-turn navigation directly to the venue.
               </p>
-            </div>
-
-            {/* 5. Collaborator & Initial Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="collaborator" className="block text-sm font-semibold text-gray-700 mb-1">
-                  Collaborator / Client Name
-                </label>
-                <div className="relative rounded-xl">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-400">
-                    <Building2 className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="collaborator"
-                    name="collaborator"
-                    type="text"
-                    placeholder="e.g. Radisson Events / Horizon Planners"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-1">
-                  Event Status
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  defaultValue="upcoming"
-                  className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-sm bg-white"
-                >
-                  <option value="upcoming">Upcoming Event</option>
-                  <option value="current">Current Event (Active)</option>
-                  <option value="past">Past Event (Completed)</option>
-                </select>
-              </div>
             </div>
 
             {/* Submit Button */}
@@ -614,25 +527,6 @@ export default function AdminDashboardClient({
                 </button>
               ))}
             </div>
-
-            {/* Collaborator Dropdown */}
-            {uniqueCollaborators.length > 0 && (
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <span className="text-xs font-semibold text-gray-500 whitespace-nowrap">Collaborator:</span>
-                <select
-                  value={collaboratorFilter}
-                  onChange={(e) => setCollaboratorFilter(e.target.value)}
-                  className="text-xs px-3 py-1.5 rounded-xl border border-purple-200 bg-white text-gray-700 outline-none"
-                >
-                  <option value="all">All Collaborators</option>
-                  {uniqueCollaborators.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
 
           {/* Events List */}
@@ -694,19 +588,11 @@ export default function AdminDashboardClient({
                       {/* Event Title */}
                       <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
 
-                      {/* Collaborator */}
-                      {event.collaborator && (
-                        <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5 mt-1">
-                          <Building2 className="w-3.5 h-3.5" />
-                          Collaborator: {event.collaborator}
-                        </p>
-                      )}
-
-                      {/* Event Specs Grid */}
-                      <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-gray-600 bg-purple-50/40 p-3.5 rounded-2xl border border-purple-100">
+                      {/* Event Specs Grid: Date, Place, Days */}
+                      <div className="mt-4 grid grid-cols-3 gap-2.5 text-xs text-gray-600 bg-purple-50/40 p-3.5 rounded-2xl border border-purple-100">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-medium">{formatEventDate(event.event_date)}</span>
+                          <span className="font-medium truncate">{formatEventDate(event.event_date)}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -716,14 +602,9 @@ export default function AdminDashboardClient({
 
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span>
-                            {event.days} {event.days === 1 ? 'Day' : 'Days'} • {event.hours}
+                          <span className="font-semibold text-purple-900">
+                            {event.days} {event.days === 1 ? 'Day' : 'Days'}
                           </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Utensils className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="truncate font-medium">{event.food}</span>
                         </div>
                       </div>
 

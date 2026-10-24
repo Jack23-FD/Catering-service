@@ -37,15 +37,26 @@ export async function createEventPost(formData: FormData) {
   const name = formData.get('name') as string;
   const event_date = formData.get('event_date') as string;
   const place = formData.get('place') as string;
-  const food = formData.get('food') as string;
   const days = parseInt((formData.get('days') as string) || '1', 10);
-  const hours = formData.get('hours') as string;
   const venue_map_url = (formData.get('venue_map_url') as string) || '';
-  const collaborator = (formData.get('collaborator') as string) || '';
-  const status = ((formData.get('status') as string) || 'upcoming') as 'upcoming' | 'current' | 'past';
 
-  if (!name || !event_date || !place || !food || !hours) {
-    return { success: false, error: 'Please fill in all required event details.' };
+  if (!name || !event_date || !place) {
+    return { success: false, error: 'Please fill in Event Name, Date, and Place.' };
+  }
+
+  // Auto-determine status from event date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const evDate = new Date(event_date);
+  evDate.setHours(0, 0, 0, 0);
+
+  let status: 'upcoming' | 'current' | 'past' = 'upcoming';
+  if (evDate.getTime() < today.getTime()) {
+    status = 'past';
+  } else if (evDate.getTime() === today.getTime()) {
+    status = 'current';
+  } else {
+    status = 'upcoming';
   }
 
   const { data: event, error } = await supabase
@@ -54,11 +65,11 @@ export async function createEventPost(formData: FormData) {
       name: name.trim(),
       event_date,
       place: place.trim(),
-      food: food.trim(),
+      food: 'Catering Service',
       days: isNaN(days) || days < 1 ? 1 : days,
-      hours: hours.trim(),
+      hours: 'Standard Shift',
       venue_map_url: venue_map_url.trim() || null,
-      collaborator: collaborator.trim() || null,
+      collaborator: null,
       status,
       created_by: user.id,
     })

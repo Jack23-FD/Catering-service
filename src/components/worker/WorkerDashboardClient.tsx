@@ -7,7 +7,6 @@ import {
   User,
   MapPin,
   Clock,
-  Utensils,
   ExternalLink,
   Phone,
   Mail,
@@ -15,7 +14,6 @@ import {
   CheckCircle2,
   CalendarDays,
   Bell,
-  Building2,
   AlertCircle,
   Loader2,
   Camera,
@@ -265,37 +263,22 @@ export default function WorkerDashboardClient({
                       {/* Event Title */}
                       <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
 
-                      {/* Collaborator */}
-                      {event.collaborator && (
-                        <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5 mt-1">
-                          <Building2 className="w-3.5 h-3.5" />
-                          Client / Collaborator: {event.collaborator}
-                        </p>
-                      )}
-
-                      {/* Admin-Entered Catering Details */}
-                      <div className="mt-4 space-y-2 bg-purple-50/40 p-4 rounded-2xl border border-purple-100 text-xs">
-                        <div className="flex items-center gap-2.5 text-gray-700">
+                      {/* Event Details: Date, Place, Days */}
+                      <div className="mt-4 grid grid-cols-3 gap-2.5 text-xs text-gray-700 bg-purple-50/40 p-3.5 rounded-2xl border border-purple-100">
+                        <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-semibold text-gray-900">{formatEventDate(event.event_date)}</span>
+                          <span className="font-semibold text-gray-900 truncate">{formatEventDate(event.event_date)}</span>
                         </div>
 
-                        <div className="flex items-center gap-2.5 text-gray-700">
+                        <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span className="font-medium">{event.place}</span>
+                          <span className="font-medium truncate">{event.place}</span>
                         </div>
 
-                        <div className="flex items-center gap-2.5 text-gray-700">
+                        <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span>
-                            <strong className="text-gray-900">{event.days} {event.days === 1 ? 'Day' : 'Days'}</strong> • Shift: {event.hours}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2.5 text-gray-700">
-                          <Utensils className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span>
-                            Menu: <strong className="text-gray-900">{event.food}</strong>
+                          <span className="font-bold text-purple-900 truncate">
+                            {event.days} {event.days === 1 ? 'Day' : 'Days'}
                           </span>
                         </div>
                       </div>
@@ -399,35 +382,23 @@ export default function WorkerDashboardClient({
 
                       <h3 className="text-lg font-bold text-gray-900">{event.name}</h3>
 
-                      {event.collaborator && (
-                        <p className="text-xs font-semibold text-purple-700 flex items-center gap-1.5 mt-1">
-                          <Building2 className="w-3.5 h-3.5" />
-                          Collaborator: {event.collaborator}
-                        </p>
-                      )}
-
-                      {/* Specs */}
-                      <div className="mt-4 bg-emerald-50/40 p-4 rounded-2xl border border-emerald-100 space-y-2 text-xs text-gray-700">
+                      {/* Event Details: Date, Place, Days */}
+                      <div className="mt-4 bg-emerald-50/40 p-3.5 rounded-2xl border border-emerald-100 grid grid-cols-3 gap-2.5 text-xs text-gray-700">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span className="font-bold">{formatEventDate(event.event_date)}</span>
+                          <span className="font-bold text-gray-900 truncate">{formatEventDate(event.event_date)}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span>{event.place}</span>
+                          <span className="truncate">{event.place}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span>
-                            {event.days} {event.days === 1 ? 'Day' : 'Days'} • {event.hours}
+                          <span className="font-bold text-emerald-950 truncate">
+                            {event.days} {event.days === 1 ? 'Day' : 'Days'}
                           </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Utensils className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span>Catering Menu: {event.food}</span>
                         </div>
                       </div>
 
